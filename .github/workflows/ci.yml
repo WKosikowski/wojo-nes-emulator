@@ -31,9 +31,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Select Xcode version (e.g., 16.0)
-      # - name: Select Xcode
-      #   run: sudo xcode-select -switch /Applications/Xcode_16.0.app
+      # Select Xcode version (e.g., 16.3)
+      - name: Select Xcode version
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.3'
 
       # Log Xcode version for debugging
       - name: Log Xcode Version
