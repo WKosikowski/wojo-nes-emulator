@@ -30,7 +30,15 @@ jobs:
       # Check out the repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
+      
+      # Install SwiftFormat via Homebrew
+      - name: Install SwiftFormat
+        run: brew install swiftformat
 
+      # Run SwiftFormat linting to check code style
+      - name: Run SwiftFormat Lint
+        run: swiftformat --lint .
+     
       # Select Xcode version (16.2)
       - name: Select Xcode version
         uses: maxim-lobanov/setup-xcode@v1
