@@ -20,7 +20,7 @@ jobs:
             destination: 'platform=macOS'
             scheme: 'WojoNES' # Replace with your macOS scheme name
           - name: iOS
-            destination: 'platform=iOS Simulator,OS=latest,name=iPhone 15' # Covers iPhone
+            destination: 'platform=iOS Simulator,OS=latest,name=iPhone 16' # Covers iPhone
             scheme: 'WojoNES' # Replace with your iOS scheme name
           - name: iPad
             destination: 'platform=iOS Simulator,OS=latest,name=iPad (10th generation)' # Covers iPad
