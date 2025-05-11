@@ -1,0 +1,68 @@
+name: WojoNES GitHub Actions CI
+
+# Trigger on push or pull request to main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    # Use macOS 14 (Apple Silicon) for better performance
+    runs-on: macos-14
+
+    # Matrix strategy to test multiple platforms
+    strategy:
+      matrix:
+        platform:
+          - name: macOS
+            destination: 'platform=macOS'
+            scheme: 'WojoNES' # Replace with your macOS scheme name
+          - name: iOS
+            destination: 'platform=iOS Simulator,OS=latest,name=iPhone 15' # Covers iPhone
+            scheme: 'WojoNES' # Replace with your iOS scheme name
+          - name: iPad
+            destination: 'platform=iOS Simulator,OS=latest,name=iPad (10th generation)' # Covers iPad
+            scheme: 'WojoNES' # Same iOS scheme, different destination
+
+    steps:
+      # Check out the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Select Xcode version (e.g., 16.0)
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_16.0.app
+
+      # Log Xcode version for debugging
+      - name: Log Xcode Version
+        run: xcodebuild -version
+
+      # Resolve Swift Package Manager dependencies (if any)
+      - name: Resolve Dependencies
+        run: xcodebuild -resolvePackageDependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      # Build and test for the specified platform
+      - name: Build and Test
+        env:
+          SCHEME: ${{ matrix.platform.scheme }}
+          DESTINATION: ${{ matrix.platform.destination }}
+        run: |
+          xcodebuild clean build test \
+            -project WojoNES.xcodeproj \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -sdk ${{ matrix.platform.name == 'macOS' && 'macosx' || 'iphonesimulator' }} \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      # Upload test logs if tests fail (optional)
+      - name: Upload Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.platform.name }}
+          path: ~/Library/Logs/*
