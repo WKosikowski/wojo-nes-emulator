@@ -9,7 +9,6 @@
 
 # Format options
 
---header ""
 --allman false
 --binarygrouping 4,8
 --commas always
