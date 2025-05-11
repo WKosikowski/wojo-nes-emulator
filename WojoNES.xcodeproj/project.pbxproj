@@ -28,6 +28,8 @@
 		79DAE1882DD0FBA000FE84E3 /* WojoNESTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WojoNESTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		79DAE1922DD0FBA000FE84E3 /* WojoNESUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WojoNESUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		79DAE1BD2DD1043500FE84E3 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		79DAE1F42DD1073D00FE84E3 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		79DAE2022DD113D900FE84E3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -76,6 +78,7 @@
 		79DAE16E2DD0FB9C00FE84E3 = {
 			isa = PBXGroup;
 			children = (
+				79DAE2022DD113D900FE84E3 /* README.md */,
 				79DAE1792DD0FB9C00FE84E3 /* WojoNES */,
 				79DAE18B2DD0FBA000FE84E3 /* WojoNESTests */,
 				79DAE1952DD0FBA000FE84E3 /* WojoNESUITests */,
@@ -94,6 +97,11 @@
 			sourceTree = "<group>";
 		};
 		79DAE1BF2DD1043500FE84E3 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		79DAE1F62DD1073D00FE84E3 /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -205,6 +213,10 @@
 			productRefGroup = 79DAE1782DD0FB9C00FE84E3 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = 79DAE1F62DD1073D00FE84E3 /* Products */;
+					ProjectRef = 79DAE1F42DD1073D00FE84E3 /* WojoNES.xcodeproj */;
+				},
 				{
 					ProductGroup = 79DAE1BF2DD1043500FE84E3 /* Products */;
 					ProjectRef = 79DAE1BD2DD1043500FE84E3 /* WojoNES.xcodeproj */;
