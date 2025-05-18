@@ -1,0 +1,40 @@
+---
+config:
+  layout: elk
+  theme: forest
+  look: neo
+---
+stateDiagram
+  direction TB
+  [*] --> Idle_awaititng_event:Launch Emulator
+  Idle_awaititng_event --> Loading:User selects "Open"<br>Show file picker
+  Idle_awaititng_event --> Debug:User selects "Show Debug"<br>Open debug window
+  Idle_awaititng_event --> Options:User selects "Show Options"<br>Open options window
+  Idle_awaititng_event --> [*]:User closes emulator<br>Save settings
+  Loading --> Idle_awaititng_event:Cancel file picker
+  Loading --> Verifying:File selected<br>Read .nes file
+  Verifying --> Idle_awaititng_event:Invalid header<br>Show error
+  Verifying --> Initializing:Valid header<br>Parse ROM data
+  Initializing --> Running:Setup complete<br>Start emulation loop
+  Initializing --> Idle_awaititng_event:Setup error<br>Show error
+  Running --> Paused:User presses "Start/Pause"<br>Pause emulation
+  Running --> Saving:User selects "Save State"<br>Serialize states
+  Running --> LoadingState:User selects "Load State"<br>Load state file
+  Running --> Debug:User selects "Show Debug"<br>Open debug window
+  Running --> Options:User selects "Show Options"<br>Open options window
+  Running --> Running:Execute CPU cycle<br>Update PPU, APU, inputs
+  Running --> Idle_awaititng_event:User closes emulator<br>Save settings
+  Paused --> Running:User presses "Start/Pause"<br>Resume emulation
+  Paused --> Saving:User selects "Save State"<br>Serialize states
+  Paused --> LoadingState:User selects "Load State"<br>Load state file
+  Paused --> Debug:User selects "Show Debug"<br>Open debug window
+  Paused --> Options:User selects "Show Options"<br>Open options window
+  Paused --> Idle_awaititng_event:User closes emulator<br>Save settings
+  Saving --> Running:Save complete<br>Return to emulation
+  Saving --> Paused:Save complete (if paused)<br>Return to paused state
+  Saving --> Idle_awaititng_event:Save error<br>Show error
+  LoadingState --> Running:Load complete<br>Restore emulation
+  LoadingState --> Paused:Load complete (if paused)<br>Restore paused state
+  LoadingState --> Idle_awaititng_event:Load error<br>Show error
+  Debug --> Idle_awaititng_event:Close debug window
+  Options --> Idle_awaititng_event:Close options window
