@@ -1,0 +1,42 @@
+---
+config:
+%%  layout: elk
+  theme: redux
+---
+flowchart TB
+    A["Start: Validate NES Header"] --> B["Read .nes file"]
+    B -- File read successfully --> C["Extract first 16 bytes - iNES header"]
+    B -- File read error --> D["Display error: Failed to read file"]
+    D --> E["Return to file picker"]
+    C --> F{"Check header size"}
+    F -- Exactly 16 bytes --> G["Verify magic number - 0x4E 0x45 0x53 0x1A"]
+    F -- Not 16 bytes --> H["Display error: Invalid header size"]
+    H --> E
+    G --> I{"Magic number valid?"}
+    I -- Yes --> J["Read PRG-ROM size - byte 4: 16KB units"]
+    I -- No --> K["Display error: Invalid magic number"]
+    K --> E
+    J --> L{"Check PRG-ROM size"}
+    L -- "Non-zero and reasonable - e.g., &lt;= 4096KB" --> M["Read CHR-ROM size - byte 5: 8KB units"]
+    L -- Zero or unreasonable --> N["Display error: Invalid PRG-ROM size"]
+    N --> E
+    M --> O{"Check CHR-ROM size"}
+    O -- "Valid - 0 or reasonable, e.g., &lt;= 2048KB" --> P["Read mapper number - bytes 6-7: lower 4 bits"]
+    O -- Unreasonable --> Q["Display error: Invalid CHR-ROM size"]
+    Q --> E
+    P --> R{"Check mapper number"}
+    R -- "Supported mapper - e.g., 0-255" --> S["Read flags - bytes 6-9: mirroring, battery, trainer"]
+    R -- Unsupported mapper --> T["Display error: Unsupported mapper"]
+    T --> E
+    S --> U{"Check flags"}
+    U -- "Valid flags - e.g., valid mirroring, trainer size" --> V["Verify header checksum - bytes 10-15 reserved, typically 0"]
+    U -- "Invalid flags - e.g., reserved bits set" --> W["Display error: Invalid header flags"]
+    W --> E
+    V --> X{"Checksum valid?"}
+    X -- Reserved bytes are 0 or ignored --> Y["Header validation successful"]
+    X -- Invalid checksum --> Z["Display error: Invalid header checksum"]
+    Z --> E
+    Y --> AA["Proceed to parse ROM data - PRG-ROM, CHR-ROM, trainer"]
+    AA --> AB["End: Header validated"]
+    E --> AC["End: Validation failed"]
+    X --> n1["Untitled Node"]
