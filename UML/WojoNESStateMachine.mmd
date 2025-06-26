@@ -1,0 +1,48 @@
+---
+config:
+  layout: elk
+  theme: forest
+  look: neo
+---
+stateDiagram
+  direction TB
+  classDef wideState width:190px;
+  
+  [*] --> Idle:Launch Emulator
+  Idle --> Selecting:User selects "Open"<br>Show file picker
+  Idle --> Debug:User selects "Show Debug"<br>Open debug window
+  Idle --> Options:User selects "Show Options"<br>Open options window
+  Idle --> [*]:User closes emulator<br>Save settings
+  Selecting --> Idle:Cancel file picker
+  Selecting --> Verifying:File selected<br>Read .nes file
+  Verifying --> Idle:Invalid header<br>Show error
+  Verifying --> Initializing:Valid header<br>Parse ROM data
+  Initializing --> Running:Setup complete<br>Start emulation loop
+  Initializing --> Idle:Setup error<br>Show error
+  Running --> Paused:User presses "Start/Pause"<br>Pause emulation
+  Running --> Saving:User selects "Save State"<br>Serialize states
+  Running --> Loading:User selects "Load State"<br>Load state file
+  Running --> Debug:User selects "Show Debug"<br>Open debug window
+  Running --> Options:User selects "Show Options"<br>Open options window
+  Running --> Running:Execute CPU cycle<br>Update PPU, APU, inputs
+  Running --> Idle:User closes emulator<br>Save settings
+  Paused --> Running:User presses "Start/Pause"<br>Resume emulation
+  Paused --> Saving:User selects "Save State"<br>Serialize states
+  Paused --> Loading:User selects "Load State"<br>Load state file
+  Paused --> Debug:User selects "Show Debug"<br>Open debug window
+  Paused --> Options:User selects "Show Options"<br>Open options window
+  Paused --> Idle:User closes emulator<br>Save settings
+  Saving --> Running:Save complete<br>Return to emulation
+  Saving --> Paused:Save complete (if paused)<br>Return to paused state
+  Saving --> Idle:Save error<br>Show error
+  Loading --> Running:Load complete<br>Restore emulation
+  Loading --> Paused:Load complete (if paused)<br>Restore paused state
+  Loading --> Idle:Load error<br>Show error
+  Debug --> Idle:Close debug window
+  Options --> Idle:Close options window
+  
+  Idle: Idle (awaiting user event)
+  Running: Running (emulation in progress)
+  Paused: Paused (emulation paused)
+
+  class Idle wideState
