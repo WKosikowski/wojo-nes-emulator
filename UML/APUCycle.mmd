@@ -1,0 +1,84 @@
+---
+config:
+  layout: elk
+  theme: redux
+---
+flowchart TD
+    %% Node Definitions
+    start_apu_cycle["Start APU Cycle"]
+    check_apu_status_register["Check APU Status Register (0x4015)"]
+    apu_enabled{"Is APU Enabled?"}
+    advance_apu_timers["Advance Timers for All Channels"]
+    mute_channels["Mute All Channels"]
+    output_silence["Output Silent Audio"]
+    process_pulse1["Process Pulse 1 Channel"]
+    process_pulse2["Process Pulse 2 Channel"]
+    process_triangle_noise_dmc["Process Triangle, Noise, DMC Channels"]
+    pulse1_enabled{"Is Pulse 1 Enabled?"}
+    pulse2_enabled{"Is Pulse 2 Enabled?"}
+    check_pulse1_timer["Check Timer for Pulse 1 (Registers 0x4002-0x4003)"]
+    silence_pulse1["Output Silence for Pulse 1"]
+    pulse1_timer_expired{"Has Pulse 1 Timer Expired?"}
+    generate_pulse1_waveform["Generate Pulse 1 Waveform (Duty Cycle: 0x4000)"]
+    maintain_pulse1_waveform["Maintain Current Waveform for Pulse 1"]
+    apply_pulse1_volume_envelope["Apply Volume/Envelope (0x4000)"]
+    apply_pulse1_sweep["Apply Frequency Sweep (0x4001)"]
+    output_pulse1_sample["Output Pulse 1 Sample"]
+    check_pulse2_timer["Check Timer for Pulse 2 (Registers 0x4006-0x4007)"]
+    silence_pulse2["Output Silence for Pulse 2"]
+    pulse2_timer_expired{"Has Pulse 2 Timer Expired?"}
+    generate_pulse2_waveform["Generate Pulse 2 Waveform (Duty Cycle: 0x4004)"]
+    maintain_pulse2_waveform["Maintain Current Waveform for Pulse 2"]
+    apply_pulse2_volume_envelope["Apply Volume/Envelope (0x4004)"]
+    apply_pulse2_sweep["Apply Frequency Sweep (0x4005)"]
+    output_pulse2_sample["Output Pulse 2 Sample"]
+    mix_samples["Mix Channel Samples, Add to Buffer"]
+    buffer_full{"Is Audio Buffer Full?"}
+    send_to_audio_device["Send to Audio Device (e.g., Core Audio)"]
+    queue_samples["Queue Samples for Next Cycle"]
+    end_audio_generation["End: Audio Sample Generation"]
+
+    %% Node Connections
+    start_apu_cycle --> check_apu_status_register
+    check_apu_status_register --> apu_enabled
+    apu_enabled -- Yes --> advance_apu_timers
+    apu_enabled -- No --> mute_channels
+    mute_channels --> output_silence
+    advance_apu_timers --> process_pulse1
+    process_pulse1 --> process_pulse2
+    process_pulse1 --> pulse1_enabled
+    process_pulse2 --> process_triangle_noise_dmc
+    process_pulse2 --> pulse2_enabled
+    pulse1_enabled -- Yes --> check_pulse1_timer
+    pulse1_enabled -- No --> silence_pulse1
+    check_pulse1_timer --> pulse1_timer_expired
+    pulse1_timer_expired -- Yes --> generate_pulse1_waveform
+    pulse1_timer_expired -- No --> maintain_pulse1_waveform
+    generate_pulse1_waveform --> apply_pulse1_volume_envelope
+    maintain_pulse1_waveform --> apply_pulse1_volume_envelope
+    apply_pulse1_volume_envelope --> apply_pulse1_sweep
+    apply_pulse1_sweep --> output_pulse1_sample
+    silence_pulse1 --> output_pulse1_sample
+    pulse2_enabled -- Yes --> check_pulse2_timer
+    pulse2_enabled -- No --> silence_pulse2
+    check_pulse2_timer --> pulse2_timer_expired
+    pulse2_timer_expired -- Yes --> generate_pulse2_waveform
+    pulse2_timer_expired -- No --> maintain_pulse2_waveform
+    generate_pulse2_waveform --> apply_pulse2_volume_envelope
+    maintain_pulse2_waveform --> apply_pulse2_volume_envelope
+    apply_pulse2_volume_envelope --> apply_pulse2_sweep
+    apply_pulse2_sweep --> output_pulse2_sample
+    silence_pulse2 --> output_pulse2_sample
+    output_pulse1_sample --> mix_samples
+    output_silence --> mix_samples
+    process_triangle_noise_dmc --> mix_samples
+    output_pulse2_sample --> mix_samples
+    mix_samples --> buffer_full
+    buffer_full -- Yes --> send_to_audio_device
+    buffer_full -- No --> queue_samples
+    send_to_audio_device --> end_audio_generation
+    queue_samples --> end_audio_generation
+
+    %% Styling
+    style process_triangle_noise_dmc fill:#FFCDD2
+    style mix_samples fill:#E1BEE7
