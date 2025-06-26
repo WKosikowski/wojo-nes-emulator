@@ -8,78 +8,85 @@
 struct StatusRegister {
     // MARK: Properties
 
+    var value: UInt8
+
+    // MARK: Computed Properties
+
     var carry: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 1) : (value & ~1)
+        }
+        get {
+            value & 1 != 0
+        }
     }
 
     var zero: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 2) : (value & ~2)
+        }
+        get {
+            (value & 2) >> 1 != 0
+        }
     }
 
     var irqDisabled: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 4) : (value & ~4)
+        }
+        get {
+            (value & 4) >> 2 != 0
+        }
     }
 
     var decimal: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 8) : (value & ~8)
+        }
+        get {
+            (value & 8) >> 3 != 0
+        }
     }
 
     var `break`: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 16) : (value & ~16)
+        }
+        get {
+            (value & 16) >> 4 != 0
+        }
     }
 
     var unused: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 32) : (value & ~32)
+        }
+        get {
+            (value & 32) >> 5 != 0
+        }
     }
 
     var overflow: Bool {
-        didSet { updateValue() }
+        set {
+            value = newValue ? (value | 64) : (value & ~64)
+        }
+        get {
+            (value & 64) >> 6 != 0
+        }
     }
 
     var negative: Bool {
-        didSet { updateValue() }
-    }
-
-    var value: UInt8 {
-        didSet { updateFlags() }
+        set {
+            value = newValue ? (value | 128) : (value & ~128)
+        }
+        get {
+            (value & 128) >> 7 != 0
+        }
     }
 
     // MARK: Lifecycle
 
     init() {
-        carry = false
-        zero = false
-        irqDisabled = false
-        decimal = false
-        self.break = false
-        unused = false
-        overflow = false
-        negative = false
         value = 0
-    }
-
-    // MARK: Functions
-
-    private mutating func updateValue() {
-        var value = 0
-        if carry { value |= 1 << 0 }
-        if zero { value |= 1 << 1 }
-        if irqDisabled { value |= 1 << 2 }
-        if decimal { value |= 1 << 3 }
-        if `break` { value |= 1 << 4 }
-        if unused { value |= 1 << 5 }
-        if overflow { value |= 1 << 6 }
-        if negative { value |= 1 << 7 }
-    }
-
-    private mutating func updateFlags() {
-        carry = (value & (1 << 0)) != 0
-        zero = (value & (1 << 1)) != 0
-        irqDisabled = (value & (1 << 2)) != 0
-        decimal = (value & (1 << 3)) != 0
-        `break` = (value & (1 << 4)) != 0
-        unused = (value & (1 << 5)) != 0
-        overflow = (value & (1 << 6)) != 0
-        negative = (value & (1 << 7)) != 0
     }
 }
