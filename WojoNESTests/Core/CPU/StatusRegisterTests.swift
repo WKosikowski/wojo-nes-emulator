@@ -10,7 +10,7 @@ import Testing
 
 struct StatusRegisterTests {
     @Test
-    func testDefaultInitialization() {
+    func defaultInitialization() {
         let status = StatusRegister()
 
         #expect(status.carry == false)
@@ -25,7 +25,7 @@ struct StatusRegisterTests {
     }
 
     @Test
-    func testIndividualFlagSetting() {
+    func individualFlagSetting() {
         var status = StatusRegister()
 
         status.carry = true
@@ -58,7 +58,7 @@ struct StatusRegisterTests {
     }
 
     @Test
-    func testRegisterGetter() {
+    func registerGetter() {
         var status = StatusRegister()
 
         // Test with all flags false (except unused)
@@ -98,7 +98,7 @@ struct StatusRegisterTests {
     }
 
     @Test
-    func testRegisterSetter() {
+    func registerSetter() {
         var status = StatusRegister()
 
         // Set register to 0x00 (should still have unused bit set)
@@ -147,7 +147,7 @@ struct StatusRegisterTests {
     }
 
     @Test
-    func testEdgeCases() {
+    func edgeCases() {
         var status = StatusRegister()
 
         // All flags false except unused
