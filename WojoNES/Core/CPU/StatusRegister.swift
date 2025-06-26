@@ -8,7 +8,11 @@
 struct StatusRegister {
     // MARK: Properties
 
-    var value: UInt8
+    var value: UInt8 {
+        didSet {
+            value |= 32
+        }
+    }
 
     // MARK: Computed Properties
 
@@ -59,7 +63,7 @@ struct StatusRegister {
 
     var unused: Bool {
         set {
-            value = newValue ? (value | 32) : (value & ~32)
+            value = (value | 32)
         }
         get {
             (value & 32) >> 5 != 0
@@ -86,7 +90,7 @@ struct StatusRegister {
 
     // MARK: Lifecycle
 
-    init() {
-        value = 0
+    init(_ value: UInt8 = 32) {
+        self.value = value | 32
     }
 }
