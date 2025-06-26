@@ -1,0 +1,75 @@
+---
+config:
+  layout: elk
+  theme: redux
+---
+flowchart TD
+    %% Define Nodes
+    process_channels["Process Triangle/Noise/DMC Channel"]
+    process_triangle["Process Triangle channel"]
+    process_noise["Process Noise channel"]
+    triangle_enabled{"Triangle enabled?"}
+    process_dmc["Process DMC channel"]
+    noise_enabled{"Noise enabled?"}
+    check_triangle_timer["Check timer - frequency register 0x400A-0x400B"]
+    output_silence_triangle["Output silence for Triangle"]
+    triangle_timer_expired{"Timer expired?"}
+    generate_triangle_waveform["Generate triangle waveform - linear counter 
+                                            0x4008"]
+    maintain_triangle_waveform["Maintain current waveform"]
+    apply_triangle_linear_counter["Apply linear counter - 0x4008"]
+    output_triangle_sample["Output Triangle sample"]
+    check_noise_timer["Check timer - period register 0x400E"]
+    output_silence_noise["Output silence for Noise"]
+    noise_timer_expired{"Timer expired?"}
+    generate_noise_waveform["Generate noise waveform - shift register"]
+    maintain_noise_waveform["Maintain current waveform"]
+    apply_noise_volume_envelope["Apply volume/envelope - 0x400C"]
+    output_noise_sample["Output Noise sample"]
+    dmc_enabled{"DMC enabled?"}
+    check_dmc_timer["Check timer - rate register 0x4010"]
+    output_silence_dmc["Output silence for DMC"]
+    dmc_timer_expired{"Timer expired?"}
+    fetch_dmc_sample["Fetch sample - memory reader 0x4011-0x4013"]
+    maintain_dmc_sample["Maintain current sample"]
+    update_dmc_output_level["Update output level - 7-bit DAC"]
+    output_dmc_sample["Output DMC sample"]
+    mix_channel_samples["Mix channel samples"]
+
+    %% Connect Nodes
+    process_channels --> process_triangle
+    process_triangle --> process_noise & triangle_enabled
+    process_noise --> process_dmc & noise_enabled
+    triangle_enabled -- Yes --> check_triangle_timer
+    triangle_enabled -- No --> output_silence_triangle
+    check_triangle_timer --> triangle_timer_expired
+    triangle_timer_expired -- Yes --> generate_triangle_waveform
+    triangle_timer_expired -- No --> maintain_triangle_waveform
+    generate_triangle_waveform --> apply_triangle_linear_counter
+    maintain_triangle_waveform --> apply_triangle_linear_counter
+    apply_triangle_linear_counter --> output_triangle_sample
+    output_silence_triangle --> output_triangle_sample
+    noise_enabled -- Yes --> check_noise_timer
+    noise_enabled -- No --> output_silence_noise
+    check_noise_timer --> noise_timer_expired
+    noise_timer_expired -- Yes --> generate_noise_waveform
+    noise_timer_expired -- No --> maintain_noise_waveform
+    generate_noise_waveform --> apply_noise_volume_envelope
+    maintain_noise_waveform --> apply_noise_volume_envelope
+    apply_noise_volume_envelope --> output_noise_sample
+    output_silence_noise --> output_noise_sample
+    process_dmc --> dmc_enabled
+    dmc_enabled -- Yes --> check_dmc_timer
+    dmc_enabled -- No --> output_silence_dmc
+    check_dmc_timer --> dmc_timer_expired
+    dmc_timer_expired -- Yes --> fetch_dmc_sample
+    dmc_timer_expired -- No --> maintain_dmc_sample
+    fetch_dmc_sample --> update_dmc_output_level
+    maintain_dmc_sample --> update_dmc_output_level
+    update_dmc_output_level --> output_dmc_sample
+    output_silence_dmc --> output_dmc_sample
+    output_triangle_sample --> mix_channel_samples
+    output_noise_sample --> mix_channel_samples
+    output_dmc_sample --> mix_channel_samples
+    style process_channels fill:#FFCDD2
+    style mix_channel_samples fill:#E1BEE7
