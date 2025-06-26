@@ -1,0 +1,65 @@
+---
+config:
+  layout: elk
+  theme: redux
+---
+flowchart TD
+    start_ppu_cycle[Start: PPU cycle - synced with CPU]
+    check_ppu_control[Check PPU control - register 0x2000]
+    is_ppu_enabled{PPU enabled?}
+    advance_ppu_cycle[Advance PPU cycle - 3 PPU cycles per CPU cycle]
+    output_blank_screen[Output blank screen]
+    end_ppu_cycle[End: PPU cycle complete]
+    scanline_position{Scanline position?}
+    initialize_ppu[Initialize PPU - clear VBlank, reset registers]
+    render_scanline[Render scanline]
+    idle_operation[Idle - prepare for VBlank]
+    set_vblank_flag[Set VBlank flag - trigger NMI if enabled]
+    reset_sprite_flags[Reset sprite overflow, hit flags]
+    update_scroll[Update scroll - registers 0x2005, 0x2006]
+    advance_to_next_scanline[Advance to next scanline]
+    check_nmi_enable[Check NMI enable - 0x2000]
+    is_nmi_enabled{NMI enabled?}
+    trigger_nmi[Trigger NMI - CPU jumps to 0xFFFA]
+    no_nmi[No NMI]
+    are_all_scanlines_done{All visible scanlines done?}
+    complete_frame[Complete frame - 256x240 pixels. Send frame to display buffer]
+    check_display_buffer[Check display buffer]
+    is_buffer_ready{Buffer frame ready?}
+    render_frame[Render frame - e.g., Metal, Core Graphics]
+    queue_frame[Queue frame for next cycle]
+
+    %% Adding node connections
+    
+    start_ppu_cycle --> check_ppu_control
+    check_ppu_control --> is_ppu_enabled
+    is_ppu_enabled -- Yes --> advance_ppu_cycle
+    is_ppu_enabled -- No --> output_blank_screen
+    output_blank_screen --> end_ppu_cycle
+    advance_ppu_cycle --> scanline_position
+    scanline_position -- "Pre-render scanline - -1" --> initialize_ppu
+    scanline_position -- "Visible scanlines - 0 to 239" --> render_scanline
+    scanline_position -- "Post-render scanline - 240" --> idle_operation
+    scanline_position -- "VBlank scanlines - 241 to 261" --> set_vblank_flag
+    initialize_ppu --> reset_sprite_flags
+    reset_sprite_flags --> update_scroll
+    update_scroll --> advance_to_next_scanline
+    advance_to_next_scanline --> end_ppu_cycle
+    idle_operation --> advance_to_next_scanline
+    set_vblank_flag --> check_nmi_enable
+    check_nmi_enable --> is_nmi_enabled
+    is_nmi_enabled -- Yes --> trigger_nmi
+    is_nmi_enabled -- No --> no_nmi
+    trigger_nmi --> advance_to_next_scanline
+    no_nmi --> advance_to_next_scanline
+    render_scanline --> are_all_scanlines_done
+    are_all_scanlines_done -- Yes --> complete_frame
+    are_all_scanlines_done -- No --> advance_to_next_scanline
+    complete_frame --> check_display_buffer
+    check_display_buffer --> is_buffer_ready
+    is_buffer_ready -- Yes --> render_frame
+    is_buffer_ready -- No --> queue_frame
+    render_frame --> end_ppu_cycle
+    queue_frame --> end_ppu_cycle
+
+  style render_scanline fill:#BBDEFB
