@@ -1,0 +1,50 @@
+---
+config:
+  layout: elk
+  theme: redux
+---
+flowchart TD
+ subgraph s1["Render Line"]
+        fetch_background_data["Fetch Background Data"]
+        read_nametable["Read Nametable - VRAM 0x2000-0x2FFF"]
+        fetch_tile_index["Fetch Tile Index - 8x8 Tile from Nametable"]
+        fetch_pattern_data["Fetch Pattern Table Data - CHR-ROM 0x0000-0x1FFF"]
+        fetch_attribute_table["Fetch Attribute Table - Palette Selection"]
+        apply_scrolling["Apply Scrolling - Coarse/Fine Scroll"]
+        generate_background_pixels["Generate Background Pixels - 8 Pixels per Tile"]
+        fetch_sprite_data["Fetch Sprite Data"]
+        read_oam["Read OAM - 0x2003, 0x2004"]
+        evaluate_sprites{"Evaluate Sprites - Max 8 per Scanline"}
+        fetch_sprite_tile["Fetch Sprite Tile Data - Pattern Table"]
+        no_sprite_pixels["Handle No Sprite Pixels"]
+        fetch_sprite_attributes["Fetch Sprite Attributes - Palette, Priority, Flip"]
+        generate_sprite_pixels["Generate Sprite Pixels - 8 Pixels per Sprite"]
+        combine_pixels["Combine Background and Sprite Pixels"]
+        check_sprite_0_hit{"Check Sprite 0 Hit?"}
+        set_sprite_0_hit_flag["Set Sprite 0 Hit Flag - 0x2002"]
+        no_sprite_0_hit["Handle No Sprite 0 Hit"]
+        apply_palette["Apply Palette - VRAM 0x3F00-0x3FFF"]
+        output_scanline["Output Scanline Pixels - 256 Pixels"]
+  end
+    fetch_background_data --> read_nametable
+    read_nametable --> fetch_tile_index
+    fetch_tile_index --> fetch_pattern_data
+    fetch_pattern_data --> fetch_attribute_table
+    fetch_attribute_table --> apply_scrolling
+    apply_scrolling --> generate_background_pixels
+    generate_background_pixels --> fetch_sprite_data
+    fetch_sprite_data --> read_oam
+    read_oam --> evaluate_sprites
+    evaluate_sprites -- Sprites Found --> fetch_sprite_tile
+    evaluate_sprites -- No Sprites --> no_sprite_pixels
+    fetch_sprite_tile --> fetch_sprite_attributes
+    fetch_sprite_attributes --> generate_sprite_pixels
+    no_sprite_pixels --> combine_pixels
+    generate_sprite_pixels --> combine_pixels
+    combine_pixels --> check_sprite_0_hit
+    check_sprite_0_hit -- Yes --> set_sprite_0_hit_flag
+    check_sprite_0_hit -- No --> no_sprite_0_hit
+    set_sprite_0_hit_flag --> apply_palette
+    no_sprite_0_hit --> apply_palette
+    apply_palette --> output_scanline
+    style s1 fill:#BBDEFB
