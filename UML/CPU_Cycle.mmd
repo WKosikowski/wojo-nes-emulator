@@ -1,0 +1,66 @@
+---
+config:
+  theme: redux
+---
+flowchart TD
+    A1["Start: Entry point to exuecution loop"] --> A["Beginning of the CPU Execution Cycle"]
+    A --> B["Fetch opcode from memory - PC address"]
+    B -- Memory read successful --> C["Increment PC by 1"]
+    B -- Memory access error --> D["Handle error - e.g., invalid address"]
+    D --> E["Log error - debug output"]
+    E --> F["End: Cycle aborted"]
+    C --> G{"Valid opcode?"}
+    G -- Yes --> H["Decode opcode"]
+    G -- No --> I["Handle illegal opcode - e.g., NOP or halt"]
+    I --> J["Log illegal opcode - debug output"]
+    J --> K["Advance CPU cycles - typically 2"]
+    K --> A
+    H --> L{"Addressing mode?"}
+    L -- Immediate, Implied, Accumulator --> M["Fetch no additional bytes"]
+    L -- Zero Page, Indexed, Absolute --> N["Fetch 1-2 bytes from memory - PC"]
+    L -- Indirect, Relative --> O["Fetch 2 bytes - resolve indirect address"]
+    M --> P["Increment PC by 0"]
+    N --> Q["Increment PC by 1 or 2"]
+    O --> R["Increment PC by 2"]
+    P --> S["Execute instruction"]
+    Q --> S
+    R --> S
+    S --> T{"Instruction type?"}
+    T -- "Arithmetic/Logical - e.g., ADC, AND" --> U["Perform operation - update registers, flags"]
+    T -- "Load/Store - e.g., LDA, STA" --> V["Read/write memory - update registers"]
+    T -- "Branch - e.g., BEQ, JMP" --> W["Update PC if condition met"]
+    T -- "Stack - e.g., PHA, RTS" --> X["Push/pull stack - update SP, PC"]
+    T -- "System - e.g., BRK, RTI" --> Y["Handle system operation - e.g., trigger interrupt"]
+    U --> Z["Update status flags - e.g., Zero, Carry"]
+    V --> Z
+    W --> AA["Check branch condition"]
+    X --> Z
+    Y --> AB["Process interrupt or return"]
+    AA -- Met --> AC["Set PC to branch target"]
+    AA --  Not mett --> AD["No PC change"]
+    AC --> Z
+    AD --> Z
+    AB -- Interrupt triggered --> AE["Push PC, status to stack - set interrupt vector"]
+    AB -- Return from interrupt --> AF["Pull PC, status from stack"]
+    AE --> AG["Set PC to interrupt vector - e.g., NMI at 0xFFFA"]
+    AF --> Z
+    Z --> AH["Advance CPU cycles - based on instruction"]
+    AG --> AH
+    AH --> AI{"Check interruption"}
+    AI -- "NMI pending - e.g., PPU VBlank" --> AJ["Set NMI flag - prepare interrupt"]
+    AI -- "IRQ pending - e.g., mapper, APU" --> AK["Set IRQ flag - if not disabled"]
+    AI -- No interrupts --> AL["No action"]
+    AJ --> AM["Handle NMI - save state, jump to 0xFFFA"]
+    AK --> AN["Handle IRQ - save state, jump to 0xFFFE"]
+    AL --> AO["Prepare next cycle"]
+    AM --> AO
+    AN --> AO
+    AO --> AP{"Sync with PPU, APU?"}
+    AP -- Yes --> AQ["Update PPU - 3 PPU cycles per CPU cycle"]
+    AQ --> AR["Update APU - generate audio"]
+    AR --> AS["Read controller input - 0x4016/0x4017"]
+    AS --> AT["Check DMA - e.g., OAM transfer"]
+    AT --> AU["End: Cycle complete - return to Start"]
+    AP -- No --> AU
+    AU --> A
+    style AI stroke:#000000
