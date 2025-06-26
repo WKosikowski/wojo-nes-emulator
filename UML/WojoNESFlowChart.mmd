@@ -1,0 +1,85 @@
+---
+config:
+  theme: redux
+  layout: elk
+---
+flowchart TD
+    start_process["Start"]
+    initialise_load["Initialise and load saved state"]
+    emulator_running{"Emul. running?"}
+    open_file_picker["Open File Picker"]
+    user_selects_file["User selects .nes file"]
+    read_file["Read .nes file"]
+    verify_header["Verify iNES header"]
+    header_valid{"Header valid?"}
+    parse_info["Parse PRG-ROM, CHR-ROM,<br>and mapper info"]
+    show_error["Show error: Invalid NES file"]
+    user_action["User action"]
+    start_emulation["Set up CPU, PPU, APU, Bus. Start Emulation"]
+    continue_emulation["Continue with current emulation state"]
+    paused{"Paused?"}
+    resume_emulation["Resume emulation"]
+    pause_emulation["Pause"]
+    show_paused_ui["Show paused UI"]
+    update_controller["Update controller state<br>in memory 0x4016/0x4017"]
+    serialize_state["Serialize CPU, PPU, APU,<br>and memory states"]
+    save_to_file["Save to file"]
+    save_state["Save state"]
+    stop["Stop"]
+    load_state_file["Load state file"]
+    deserialize_state["Deserialize CPU, PPU, APU,<br>and memory states"]
+    restore_emulation["Restore emulation"]
+    open_debug_window["Open debug window"]
+    display_cpu_state["Display CPU registers,<br>memory, PPU state"]
+    open_options_window["Open options window"]
+    update_settings["Update settings<br> e.g., audio, controls"]
+    execute_instruction["Execute CPU instruction"]
+    update_ppu["Update PPU<br> render scanline, check NMI"]
+    update_apu["Update APU<br> generate audio"]
+    handle_dma_interrupts["Handle DMA or interrupts"]
+ 
+    start_process --> initialise_load
+    initialise_load --> emulator_running
+    user_action -- "Open Game" --> open_file_picker
+    open_file_picker --> user_selects_file
+    user_selects_file --> read_file
+    read_file --> verify_header
+    verify_header --> header_valid
+    header_valid -- Yes --> parse_info
+    header_valid -- No --> show_error
+    show_error --> user_action
+    parse_info --> start_emulation
+    start_emulation --> continue_emulation
+    user_action -- Press Start/Pause --> paused
+    paused -- Yes --> resume_emulation
+    paused -- No --> pause_emulation
+    pause_emulation --> show_paused_ui
+    resume_emulation --> continue_emulation
+    show_paused_ui --> continue_emulation
+    user_action -- "Pressed Controller Button" --> update_controller
+    update_controller --> continue_emulation
+    user_action -- "Select Save State" --> serialize_state
+    serialize_state --> save_to_file
+    save_to_file --> continue_emulation
+    user_action -- "Close" --> save_state
+    save_state --> stop
+    user_action -- "Select Load State" --> load_state_file
+    load_state_file --> deserialize_state
+    deserialize_state --> restore_emulation
+    restore_emulation --> continue_emulation
+    user_action -- "Select Show Debug" --> open_debug_window
+    open_debug_window --> display_cpu_state
+    display_cpu_state --> continue_emulation
+    user_action -- "Select Show Options" --> open_options_window
+    open_options_window --> update_settings
+    update_settings --> continue_emulation
+    user_action -- None --> emulator_running
+    emulator_running -- YES --> execute_instruction
+    emulator_running -- NO --> user_action
+    execute_instruction --> update_ppu
+    update_ppu --> update_apu
+    update_apu --> handle_dma_interrupts
+    handle_dma_interrupts --> continue_emulation
+    continue_emulation --> user_action
+
+    user_action@{ shape: lean-r}
