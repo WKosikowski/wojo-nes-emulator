@@ -5,6 +5,8 @@
 //  Created by Wojciech Kosikowski on 26/06/2025.
 //
 
+// MARK: - Instruction
+
 public enum Instruction: CaseIterable {
     // MARK: - Arithmetic Instructions
 
@@ -179,4 +181,94 @@ public enum Instruction: CaseIterable {
     case xaa
     /// No operation
     case nop
+}
+
+extension Instruction {
+    var instructionType: String {
+        switch self {
+            case .adc,
+                 .sbc,
+                 .inc,
+                 .dec,
+                 .inx,
+                 .iny,
+                 .dex,
+                 .dey:
+                return "Arithmetic"
+            case .and,
+                 .ora,
+                 .eor,
+                 .asl,
+                 .lsr,
+                 .rol,
+                 .ror:
+                return "Logical"
+            case .lda,
+                 .ldx,
+                 .ldy,
+                 .sta,
+                 .stx,
+                 .sty,
+                 .tax,
+                 .tay,
+                 .txa,
+                 .tya,
+                 .txs:
+                return "Data Movement"
+            case .jmp,
+                 .jsr,
+                 .rts,
+                 .rti,
+                 .bcc,
+                 .bcs,
+                 .beq,
+                 .bne,
+                 .bmi,
+                 .bpl,
+                 .bvc,
+                 .bvs,
+                 .brk:
+                return "Control Flow"
+            case .pha,
+                 .php,
+                 .pla,
+                 .plp:
+                return "Stack Operations"
+            case .clc,
+                 .cld,
+                 .cli,
+                 .clv,
+                 .sec,
+                 .sed,
+                 .sei:
+                return "Flag Manipulation"
+            case .cmp,
+                 .cpx,
+                 .cpy,
+                 .bit:
+                return "Comparison"
+            case .dop,
+                 .top,
+                 .slo,
+                 .rla,
+                 .sre,
+                 .rra,
+                 .sax,
+                 .ahx,
+                 .shx,
+                 .shy,
+                 .tas,
+                 .las,
+                 .lax,
+                 .dcp,
+                 .isc,
+                 .alr,
+                 .anc,
+                 .arr,
+                 .axs,
+                 .xaa,
+                 .nop:
+                return "Undocumented/Illegal"
+        }
+    }
 }
