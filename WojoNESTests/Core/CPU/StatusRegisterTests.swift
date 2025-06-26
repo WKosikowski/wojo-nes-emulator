@@ -160,14 +160,15 @@ struct StatusRegisterTests {
 
         // Alternating bits
         status.value = 0xAA // 10101010 (negative, overflow, breakFlag, zero)
+        print(status.value)
         #expect(status.negative == true)
-        #expect(status.overflow == true)
+        #expect(status.overflow == false)
         #expect(status.unused == true)
-        #expect(status.break == true)
-        #expect(status.decimal == false)
+        #expect(status.break == false)
+        #expect(status.decimal == true)
         #expect(status.irqDisabled == false)
         #expect(status.zero == true)
         #expect(status.carry == false)
-        #expect(status.value == 0xE2) // 0xAA | 0x20 (unused)
+        #expect(status.value == 0xAA) // 0xAA | 0x20 (unused)
     }
 }
