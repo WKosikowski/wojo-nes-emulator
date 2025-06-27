@@ -10,7 +10,7 @@ on:
 jobs:
   build-and-test:
     # Use macOS 14 (Apple Silicon) for better performance
-    runs-on: macos-latest
+    runs-on: macos-15
 
     # Matrix strategy to test multiple platforms
     strategy:
