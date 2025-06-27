@@ -41,9 +41,13 @@ public final class NESCPU {
     /// Represents the Program Counter (PC). Although 6502 uses a 16-bit PC.
     var programCounter: Int = 0
 
+    var operations: [Operation]
+
     // MARK: Lifecycle
 
-    init() {}
+    init() {
+        operations = NESCPU.setupOperations()
+    }
 
     // MARK: Functions
 
