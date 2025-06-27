@@ -37,11 +37,11 @@ public extension NESCPU {
     func aby() {}
 
     /// indirect
-    func ind() {}
+    func idi() {}
 
     /// indirectX
-    func inx() {}
+    func idx() {}
 
     /// indirectY
-    func iny() {}
+    func idy() {}
 }
