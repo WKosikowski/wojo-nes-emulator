@@ -62,6 +62,8 @@ public enum Instruction: CaseIterable {
     case tax
     /// Transfer accumulator to Y register
     case tay
+    /// Transfer Stack Pointer to X register
+    case tsx
     /// Transfer X register to accumulator
     case txa
     /// Transfer Y register to accumulator
@@ -95,6 +97,8 @@ public enum Instruction: CaseIterable {
     case bvc
     /// Branch on overflow set
     case bvs
+    /// Stop CPU
+    case stp
     /// Force break
     case brk
 
@@ -210,6 +214,7 @@ extension Instruction {
                  .stx,
                  .sty,
                  .tax,
+                 .tsx,
                  .tay,
                  .txa,
                  .tya,
@@ -227,6 +232,7 @@ extension Instruction {
                  .bpl,
                  .bvc,
                  .bvs,
+                 .stp,
                  .brk:
                 return "Control Flow"
             case .pha,

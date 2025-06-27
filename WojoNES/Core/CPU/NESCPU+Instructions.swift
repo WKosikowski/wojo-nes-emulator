@@ -58,6 +58,8 @@ public extension NESCPU {
     func sty() {}
     /// Transfer accumulator to X register
     func tax() {}
+    /// Transfer Stack Pointer to X register
+    func tsx() {}
     /// Transfer accumulator to Y register
     func tay() {}
     /// Transfer X register to accumulator
@@ -93,6 +95,8 @@ public extension NESCPU {
     func bvc() {}
     /// Branch on overflow set
     func bvs() {}
+    /// Stop CPU
+    func stp() {}
     /// Force break
     func brk() {}
 
