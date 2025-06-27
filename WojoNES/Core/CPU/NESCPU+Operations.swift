@@ -1,12 +1,12 @@
 //
-//  CPU+Operations.swift
+//  NESCPU+Operations.swift
 //  WojoNES
 //
 //  Created by Wojciech Kosikowski on 27/06/2025.
 //
 
-public extension NESCPU {
-    private static func setupOperations() {
+extension NESCPU {
+    static func setupOperations() -> [Operation] {
         // 0x00 - 0x0F
         var operations = Array(repeating: Operation(0x00, "WOJ", .implied, .brk, 7), count: 256)
 
@@ -300,5 +300,6 @@ public extension NESCPU {
         for instr in operations {
             assert(instr.name != "WOJ", "Missing operation")
         }
+        return operations
     }
 }
