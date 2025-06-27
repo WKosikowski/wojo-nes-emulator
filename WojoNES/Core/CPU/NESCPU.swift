@@ -41,7 +41,11 @@ public final class NESCPU {
     /// Represents the Program Counter (PC). Although 6502 uses a 16-bit PC.
     var programCounter: Int = 0
 
+    /// holds the list of all operations executable by the processor (256)
     var operations: [Operation]
+
+    /// Holds the temporary address during opcode execution
+    var address: UInt8 = 0
 
     // MARK: Lifecycle
 
@@ -52,4 +56,6 @@ public final class NESCPU {
     // MARK: Functions
 
     func setZeroNegativeFlags() {}
+
+    func read(_ address: Int) -> UInt8 {}
 }

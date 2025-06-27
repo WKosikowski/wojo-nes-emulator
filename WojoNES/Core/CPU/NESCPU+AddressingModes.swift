@@ -6,23 +6,34 @@
 //
 
 public extension NESCPU {
-    /// implied
+    /// implied, accumulator
     func imp() {}
 
-    /// accumulator
-    func acc() {}
-
     /// immediate
-    func imm() {}
+    func imm() {
+        address = read(programCounter)
+        programCounter += 1
+    }
 
     /// zeroPage
-    func zpg() {}
+    func zpg() {
+        address = read(programCounter)
+        programCounter += 1
+    }
 
     /// zeroPageX
-    func zpx() {}
+    func zpx() {
+        address = read(programCounter)
+        programCounter += 1
+        address = (address + xRegister) & 0xFF
+    }
 
     /// zeroPageY
-    func zpy() {}
+    func zpy() {
+        address = read(programCounter)
+        programCounter += 1
+        address = (address + yRegister) & 0xFF
+    }
 
     /// relative
     func rel() {}
