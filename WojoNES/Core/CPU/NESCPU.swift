@@ -48,7 +48,7 @@ public final class NESCPU {
     var address: Int = 0
 
     /// needed for tests, will be removed later
-    var temporaryMemory: [UInt8] = Array(repeating: 0, count: 2 ^ 14) // 16 KB
+    var temporaryMemory: [UInt8] = Array(repeating: 0, count: 0x10000)
 
     // MARK: Lifecycle
 
