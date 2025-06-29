@@ -13,28 +13,28 @@ public final class NESCPU {
     /// Formerly known as A.
     var accumulator: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(accumulator)
         }
     }
 
     /// Formerly known as X.
     var xRegister: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(xRegister)
         }
     }
 
     /// Formerly known as Y.
     var yRegister: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(yRegister)
         }
     }
 
     /// Used for unofficial opcodes.
     var resultRegister: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(resultRegister)
         }
     }
 
@@ -60,7 +60,10 @@ public final class NESCPU {
 
     // MARK: Functions
 
-    func setZeroNegativeFlags() {}
+    func setZeroNegativeFlags(_ register: UInt8) {
+        statusRegister.zero = register == 0
+        statusRegister.negative = register & 0b1000_0000 != 0
+    }
 
     func read(_ address: Int) -> UInt8 {
         temporaryMemory[address]
@@ -82,5 +85,10 @@ public final class NESCPU {
     func popFromStack() -> UInt8 {
         stackPointer += 1
         return read(Int(stackPointer))
+    }
+
+    func cmp(_ reg: UInt8, _ mem: UInt8) {
+        statusRegister.carry = reg >= mem
+        resultRegister = UInt8(reg &- mem)
     }
 }

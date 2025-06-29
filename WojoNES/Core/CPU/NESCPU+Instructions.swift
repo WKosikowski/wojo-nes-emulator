@@ -10,15 +10,41 @@ public extension NESCPU {
 
     /// Add with carry
     func adc() {
-//        accumulator += read(address)
+        let memVal = Int(read(address))
+        let intAccumulator = Int(accumulator)
+        var result = intAccumulator + memVal
+        result += (statusRegister.carry == true) ? 1 : 0
+        statusRegister.carry = result > 0xFF
+        statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
+        accumulator = UInt8(result)
     }
 
     /// Subtract memory from accumulator with borrow
-    func sbc() {}
+    /// https://www.nesdev.org/wiki/Instruction_reference#SBC
+    func sbc() {
+        let memVal = Int(~read(address))
+        let intAccumulator = Int(accumulator)
+        var result = intAccumulator + memVal
+        result += (statusRegister.carry == true) ? 1 : 0
+        statusRegister.carry = !(result < 0)
+        statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
+        accumulator = UInt8(result)
+    }
+
     /// Increment memory
-    func inc() {}
+    func inc() {
+        let value = read(address) + 1
+        write(address, value)
+        resultRegister = value // to set zero and negative flags
+    }
+
     /// Decrement memory
-    func dec() {}
+    func dec() {
+        let value = read(address) - 1
+        write(address, value)
+        resultRegister = value // to set zero and negative flags
+    }
+
     /// Increment X register
     func inx() {
         xRegister += 1
@@ -177,30 +203,64 @@ public extension NESCPU {
     // MARK: - Flag Manipulation Instructions
 
     /// Clear carry flag
-    func clc() {}
+    func clc() {
+        statusRegister.carry = false
+    }
+
     /// Clear decimal mode
-    func cld() {}
+    func cld() {
+        statusRegister.decimal = false
+    }
+
     /// Clear interrupt disable
-    func cli() {}
+    func cli() {
+        statusRegister.irqDisabled = false
+    }
+
     /// Clear overflow flag
-    func clv() {}
+    func clv() {
+        statusRegister.overflow = false
+    }
+
     /// Set carry flag
-    func sec() {}
+    func sec() {
+        statusRegister.carry = true
+    }
+
     /// Set decimal mode
-    func sed() {}
+    func sed() {
+        statusRegister.decimal = true
+    }
+
     /// Set interrupt disable
-    func sei() {}
+    func sei() {
+        statusRegister.irqDisabled = true
+    }
 
     // MARK: - Comparison Instructions
 
     /// Compare memory and accumulator
-    func cmp() {}
+    func cmp() {
+        cmp(accumulator, read(address))
+    }
+
     /// Compare memory and X register
-    func cpx() {}
+    func cpx() {
+        cmp(xRegister, read(address))
+    }
+
     /// Compare memory and Y register
-    func cpy() {}
+    func cpy() {
+        cmp(yRegister, read(address))
+    }
+
     /// Test bits in memory with accumulator
-    func bit() {}
+    func bit() {
+        let value = read(address)
+        statusRegister.zero = value & accumulator == 0
+        statusRegister.carry = value & 0b0100_0000 != 0
+        statusRegister.negative = value & 0b1000_0000 != 0
+    }
 
     // MARK: - Undocumented/Illegal Instructions
 
