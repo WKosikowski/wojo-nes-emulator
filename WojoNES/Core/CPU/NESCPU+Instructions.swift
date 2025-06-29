@@ -68,19 +68,49 @@ public extension NESCPU {
     // MARK: - Logical Instructions
 
     /// AND memory with accumulator
-    func and() {}
+    func and() {
+        accumulator &= read(address)
+    }
+
     /// OR memory with accumulator
-    func ora() {}
+    func ora() {
+        accumulator |= read(address)
+    }
+
     /// Exclusive OR memory with accumulator
-    func eor() {}
+    func eor() {
+        accumulator ^= read(address)
+    }
+
     /// Arithmetic shift left
-    func asl() {}
+    func asl() {
+        statusRegister.carry = accumulator & 0b1000_0000 != 0
+        accumulator <<= 1
+    }
+
     /// Logical shift right
-    func lsr() {}
+    func lsr() {
+        statusRegister.carry = accumulator & 0b0000_0001 != 0
+        accumulator >>= 1
+    }
+
     /// Rotate left
-    func rol() {}
+    func rol() {
+        statusRegister.carry = accumulator & 0b1000_0000 != 0
+        accumulator <<= 1
+        if statusRegister.carry {
+            accumulator |= 0b0000_0001
+        }
+    }
+
     /// Rotate right
-    func ror() {}
+    func ror() {
+        statusRegister.carry = accumulator & 0b0000_0001 != 0
+        accumulator >>= 1
+        if statusRegister.carry {
+            accumulator |= 0b1000_0000
+        }
+    }
 
     // MARK: - Data Movement Instructions
 
