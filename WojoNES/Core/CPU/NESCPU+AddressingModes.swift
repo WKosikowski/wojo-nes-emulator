@@ -44,20 +44,20 @@ public extension NESCPU {
 
     /// absolute
     func abs() {
-        let lowBit = read(programCounter)
+        let lowByte = read(programCounter)
         programCounter += 1
-        let highBit = read(programCounter)
+        let highByte = read(programCounter)
         programCounter += 1
-        address = Int((highBit << 8) | lowBit)
+        address = (Int(highByte) << 8) | Int(lowByte)
     }
 
     /// absoluteX
     func abx() {
-        let lowBit = read(programCounter)
+        let lowByte = read(programCounter)
         programCounter += 1
-        let highBit = read(programCounter)
+        let highByte = read(programCounter)
         programCounter += 1
-        address = Int(((highBit << 8) | lowBit) + xRegister)
+        address = ((Int(highByte) << 8) | Int(lowByte)) + Int(xRegister)
     }
 
     /// absoluteY
@@ -66,20 +66,20 @@ public extension NESCPU {
         programCounter += 1
         let highByte = read(programCounter)
         programCounter += 1
-        address = Int(((highByte << 8) | lowByte) + yRegister)
+        address = ((Int(highByte) << 8) | Int(lowByte)) + Int(yRegister)
     }
 
     /// indirect
     func idi() {
-        let lowByte = read(programCounter)
+        let lowByte = Int(read(programCounter))
         programCounter += 1
-        let highByte = read(programCounter)
+        let highByte = Int(read(programCounter))
         programCounter += 1
-        let pointer = Int((highByte << 8) | lowByte)
+        let pointer = (highByte << 8) | lowByte
         if lowByte == 0xFF {
-            address = Int((read(pointer & 0xFF00) << 8) | read(pointer))
+            address = (Int(read(pointer & 0xFF00)) << 8) | Int(read(pointer))
         } else {
-            address = Int((read(pointer + 1) << 8) | read(pointer))
+            address = (Int(read(pointer + 1)) << 8) | Int(read(pointer))
         }
     }
 
@@ -88,17 +88,17 @@ public extension NESCPU {
         let zPAddress = read(programCounter)
         programCounter += 1
         let pointer = Int((zPAddress + xRegister) & 0xFF)
-        let lowByte = read(pointer)
-        let highByte = read((pointer + 1) & 0xFF)
-        address = Int((highByte << 8) | lowByte)
+        let lowByte = Int(read(pointer))
+        let highByte = Int(read((pointer + 1) & 0xFF))
+        address = (highByte << 8) | lowByte
     }
 
     /// indirectY
     func idy() {
         let zPAddress = Int(read(programCounter))
         programCounter += 1
-        let lowByte = read(zPAddress)
-        let highByte = read((zPAddress + 1) & 0xFF)
-        address = Int(((highByte << 8) | lowByte) + yRegister)
+        let lowByte = Int(read(zPAddress))
+        let highByte = Int(read((zPAddress + 1) & 0xFF))
+        address = ((highByte << 8) | lowByte) + Int(yRegister)
     }
 }
