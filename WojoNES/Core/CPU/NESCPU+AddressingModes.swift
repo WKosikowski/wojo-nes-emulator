@@ -11,48 +11,94 @@ public extension NESCPU {
 
     /// immediate
     func imm() {
-        address = read(programCounter)
+        address = Int(read(programCounter))
         programCounter += 1
     }
 
     /// zeroPage
     func zpg() {
-        address = read(programCounter)
+        address = Int(read(programCounter))
         programCounter += 1
     }
 
     /// zeroPageX
     func zpx() {
-        address = read(programCounter)
+        address = Int(read(programCounter))
         programCounter += 1
-        address = (address + xRegister) & 0xFF
+        address = (address + Int(xRegister)) & 0xFF
     }
 
     /// zeroPageY
     func zpy() {
-        address = read(programCounter)
+        address = Int(read(programCounter))
         programCounter += 1
-        address = (address + yRegister) & 0xFF
+        address = (address + Int(yRegister)) & 0xFF
     }
 
     /// relative
-    func rel() {}
+    func rel() {
+        let offset = Int(Int8(bitPattern: read(programCounter)))
+        programCounter += 1
+        address = programCounter &+ offset
+    }
 
     /// absolute
-    func abs() {}
+    func abs() {
+        let lowBit = read(programCounter)
+        programCounter += 1
+        let highBit = read(programCounter)
+        programCounter += 1
+        address = Int((highBit << 8) | lowBit)
+    }
 
     /// absoluteX
-    func abx() {}
+    func abx() {
+        let lowBit = read(programCounter)
+        programCounter += 1
+        let highBit = read(programCounter)
+        programCounter += 1
+        address = Int(((highBit << 8) | lowBit) + xRegister)
+    }
 
     /// absoluteY
-    func aby() {}
+    func aby() {
+        let lowByte = read(programCounter)
+        programCounter += 1
+        let highByte = read(programCounter)
+        programCounter += 1
+        address = Int(((highByte << 8) | lowByte) + yRegister)
+    }
 
     /// indirect
-    func idi() {}
+    func idi() {
+        let lowByte = read(programCounter)
+        programCounter += 1
+        let highByte = read(programCounter)
+        programCounter += 1
+        let pointer = Int((highByte << 8) | lowByte)
+        if lowByte == 0xFF {
+            address = Int((read(pointer & 0xFF00) << 8) | read(pointer))
+        } else {
+            address = Int((read(pointer + 1) << 8) | read(pointer))
+        }
+    }
 
     /// indirectX
-    func idx() {}
+    func idx() {
+        let zPAddress = read(programCounter)
+        programCounter += 1
+        let pointer = Int((zPAddress + xRegister) & 0xFF)
+        let lowByte = read(pointer)
+        let highByte = read((pointer + 1) & 0xFF)
+        address = Int((highByte << 8) | lowByte)
+    }
 
     /// indirectY
-    func idy() {}
+    func idy() {
+        let zPAddress = Int(read(programCounter))
+        programCounter += 1
+        let lowByte = read(zPAddress)
+        let highByte = read((zPAddress + 1) & 0xFF)
+        address = Int(((highByte << 8) | lowByte) + yRegister)
+    }
 }

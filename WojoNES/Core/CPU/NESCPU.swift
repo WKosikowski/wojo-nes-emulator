@@ -45,7 +45,10 @@ public final class NESCPU {
     var operations: [Operation]
 
     /// Holds the temporary address during opcode execution
-    var address: UInt8 = 0
+    var address: Int = 0
+
+    /// needed for tests, will be removed later
+    var temporaryMemory: [UInt8] = Array(repeating: 0, count: 2 ^ 14) // 16 KB
 
     // MARK: Lifecycle
 
@@ -57,5 +60,7 @@ public final class NESCPU {
 
     func setZeroNegativeFlags() {}
 
-    func read(_ address: Int) -> UInt8 {}
+    func read(_ address: Int) -> UInt8 {
+        temporaryMemory[address]
+    }
 }
