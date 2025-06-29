@@ -9,7 +9,10 @@ public extension NESCPU {
     // MARK: - Arithmetic Instructions
 
     /// Add with carry
-    func adc() {}
+    func adc() {
+//        accumulator += read(address)
+    }
+
     /// Subtract memory from accumulator with borrow
     func sbc() {}
     /// Increment memory
@@ -17,13 +20,24 @@ public extension NESCPU {
     /// Decrement memory
     func dec() {}
     /// Increment X register
-    func inx() {}
+    func inx() {
+        xRegister += 1
+    }
+
     /// Increment Y register
-    func iny() {}
+    func iny() {
+        yRegister += 1
+    }
+
     /// Decrement X register
-    func dex() {}
+    func dex() {
+        xRegister -= 1
+    }
+
     /// Decrement Y register
-    func dey() {}
+    func dey() {
+        yRegister -= 1
+    }
 
     // MARK: - Logical Instructions
 
@@ -45,34 +59,72 @@ public extension NESCPU {
     // MARK: - Data Movement Instructions
 
     /// Load accumulator
-    func lda() {}
+    func lda() {
+        accumulator = read(address)
+    }
+
     /// Load X register
-    func ldx() {}
+    func ldx() {
+        xRegister = read(address)
+    }
+
     /// Load Y register
-    func ldy() {}
+    func ldy() {
+        yRegister = read(address)
+    }
+
     /// Store accumulator
-    func sta() {}
+    func sta() {
+        write(address, accumulator)
+    }
+
     /// Store X register
-    func stx() {}
+    func stx() {
+        write(address, xRegister)
+    }
+
     /// Store Y register
-    func sty() {}
+    func sty() {
+        write(address, yRegister)
+    }
+
     /// Transfer accumulator to X register
-    func tax() {}
+    func tax() {
+        xRegister = accumulator
+    }
+
     /// Transfer Stack Pointer to X register
-    func tsx() {}
+    func tsx() {
+        xRegister = stackPointer
+    }
+
     /// Transfer accumulator to Y register
-    func tay() {}
+    func tay() {
+        yRegister = accumulator
+    }
+
     /// Transfer X register to accumulator
-    func txa() {}
+    func txa() {
+        accumulator = xRegister
+    }
+
     /// Transfer Y register to accumulator
-    func tya() {}
+    func tya() {
+        accumulator = yRegister
+    }
+
     /// Transfer X register to stack pointer
-    func txs() {}
+    func txs() {
+        stackPointer = xRegister
+    }
 
     // MARK: - Control Flow Instructions
 
     /// Jump to new location
-    func jmp() {}
+    func jmp() {
+        programCounter = address
+    }
+
     /// Jump to subroutine
     func jsr() {}
     /// Return from subroutine
@@ -103,13 +155,24 @@ public extension NESCPU {
     // MARK: - Stack Operations
 
     /// Push accumulator
-    func pha() {}
+    func pha() {
+        pushToStack(accumulator)
+    }
+
     /// Push processor status
-    func php() {}
+    func php() {
+        pushToStack(statusRegister.value)
+    }
+
     /// Pull accumulator
-    func pla() {}
+    func pla() {
+        accumulator = popFromStack()
+    }
+
     /// Pull processor status
-    func plp() {}
+    func plp() {
+        statusRegister.value = popFromStack()
+    }
 
     // MARK: - Flag Manipulation Instructions
 
