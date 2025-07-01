@@ -8,8 +8,6 @@
 enum AddressingMode {
     case implied
 
-    case accumulator
-
     case immediate
 
     case zeroPage
