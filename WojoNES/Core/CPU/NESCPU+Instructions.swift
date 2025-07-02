@@ -9,135 +9,364 @@ public extension NESCPU {
     // MARK: - Arithmetic Instructions
 
     /// Add with carry
-    func adc() {}
+    func adc() {
+        let memVal = Int(read(address))
+        let intAccumulator = Int(accumulator)
+        var result = intAccumulator + memVal
+        result += (statusRegister.carry == true) ? 1 : 0
+        statusRegister.carry = result > 0xFF
+        statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
+        accumulator = UInt8(result)
+    }
+
     /// Subtract memory from accumulator with borrow
-    func sbc() {}
+    /// https://www.nesdev.org/wiki/Instruction_reference#SBC
+    func sbc() {
+        let memVal = Int(~read(address))
+        let intAccumulator = Int(accumulator)
+        var result = intAccumulator + memVal
+        result += (statusRegister.carry == true) ? 1 : 0
+        statusRegister.carry = !(result < 0)
+        statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
+        accumulator = UInt8(result)
+    }
+
     /// Increment memory
-    func inc() {}
+    func inc() {
+        let value = read(address) + 1
+        write(address, value)
+        resultRegister = value // to set zero and negative flags
+    }
+
     /// Decrement memory
-    func dec() {}
+    func dec() {
+        let value = read(address) - 1
+        write(address, value)
+        resultRegister = value // to set zero and negative flags
+    }
+
     /// Increment X register
-    func inx() {}
+    func inx() {
+        xRegister += 1
+    }
+
     /// Increment Y register
-    func iny() {}
+    func iny() {
+        yRegister += 1
+    }
+
     /// Decrement X register
-    func dex() {}
+    func dex() {
+        xRegister -= 1
+    }
+
     /// Decrement Y register
-    func dey() {}
+    func dey() {
+        yRegister -= 1
+    }
 
     // MARK: - Logical Instructions
 
     /// AND memory with accumulator
-    func and() {}
+    func and() {
+        accumulator &= read(address)
+    }
+
     /// OR memory with accumulator
-    func ora() {}
+    func ora() {
+        accumulator |= read(address)
+    }
+
     /// Exclusive OR memory with accumulator
-    func eor() {}
+    func eor() {
+        accumulator ^= read(address)
+    }
+
     /// Arithmetic shift left
-    func asl() {}
+    func asl() {
+        statusRegister.carry = accumulator & 0b1000_0000 != 0
+        accumulator <<= 1
+        resultRegister = accumulator
+    }
+
     /// Logical shift right
-    func lsr() {}
+    func lsr() {
+        statusRegister.carry = accumulator & 0b0000_0001 != 0
+        accumulator >>= 1
+        resultRegister = accumulator
+    }
+
     /// Rotate left
-    func rol() {}
+    func rol() {
+        statusRegister.carry = accumulator & 0b1000_0000 != 0
+        accumulator <<= 1
+        if statusRegister.carry {
+            accumulator |= 0b0000_0001
+        }
+        resultRegister = accumulator
+    }
+
     /// Rotate right
-    func ror() {}
+    func ror() {
+        statusRegister.carry = accumulator & 0b0000_0001 != 0
+        accumulator >>= 1
+        if statusRegister.carry {
+            accumulator |= 0b1000_0000
+        }
+        resultRegister = accumulator
+    }
 
     // MARK: - Data Movement Instructions
 
     /// Load accumulator
-    func lda() {}
+    func lda() {
+        accumulator = read(address)
+    }
+
     /// Load X register
-    func ldx() {}
+    func ldx() {
+        xRegister = read(address)
+    }
+
     /// Load Y register
-    func ldy() {}
+    func ldy() {
+        yRegister = read(address)
+    }
+
     /// Store accumulator
-    func sta() {}
+    func sta() {
+        write(address, accumulator)
+    }
+
     /// Store X register
-    func stx() {}
+    func stx() {
+        write(address, xRegister)
+    }
+
     /// Store Y register
-    func sty() {}
+    func sty() {
+        write(address, yRegister)
+    }
+
     /// Transfer accumulator to X register
-    func tax() {}
+    func tax() {
+        xRegister = accumulator
+    }
+
     /// Transfer Stack Pointer to X register
-    func tsx() {}
+    func tsx() {
+        xRegister = stackPointer
+    }
+
     /// Transfer accumulator to Y register
-    func tay() {}
+    func tay() {
+        yRegister = accumulator
+    }
+
     /// Transfer X register to accumulator
-    func txa() {}
+    func txa() {
+        accumulator = xRegister
+    }
+
     /// Transfer Y register to accumulator
-    func tya() {}
+    func tya() {
+        accumulator = yRegister
+    }
+
     /// Transfer X register to stack pointer
-    func txs() {}
+    func txs() {
+        stackPointer = xRegister
+    }
 
     // MARK: - Control Flow Instructions
 
     /// Jump to new location
-    func jmp() {}
+    func jmp() {
+        programCounter = address
+    }
+
     /// Jump to subroutine
-    func jsr() {}
+    func jsr() {
+        programCounter -= 1
+        let highByte = UInt8(programCounter >> 8)
+        let lowByte = UInt8(programCounter)
+        pushToStack(highByte)
+        pushToStack(lowByte)
+        programCounter = address
+    }
+
     /// Return from subroutine
-    func rts() {}
+    func rts() {
+        let lowByte = Int(popFromStack())
+        let highByte = Int(popFromStack()) << 8
+        programCounter = lowByte | highByte
+        programCounter += 1
+    }
+
     /// Return from interrupt
-    func rti() {}
+    func rti() {
+        statusRegister.value = popFromStack()
+        let lowByte = Int(popFromStack())
+        let highByte = Int(popFromStack()) << 8
+        programCounter = lowByte | highByte
+    }
+
     /// Branch on carry clear
-    func bcc() {}
+    func bcc() {
+        if !statusRegister.carry {
+            branch()
+        }
+    }
+
     /// Branch on carry set
-    func bcs() {}
+    func bcs() {
+        if statusRegister.carry {
+            branch()
+        }
+    }
+
     /// Branch on equal (zero flag set)
-    func beq() {}
+    func beq() {
+        if statusRegister.zero {
+            branch()
+        }
+    }
+
     /// Branch on not equal (zero flag clear)
-    func bne() {}
+    func bne() {
+        if !statusRegister.zero {
+            branch()
+        }
+    }
+
     /// Branch on minus (negative flag set)
-    func bmi() {}
+    func bmi() {
+        if statusRegister.negative {
+            branch()
+        }
+    }
+
     /// Branch on plus (negative flag clear)
-    func bpl() {}
+    func bpl() {
+        if !statusRegister.negative {
+            branch()
+        }
+    }
+
     /// Branch on overflow clear
-    func bvc() {}
+    func bvc() {
+        if !statusRegister.overflow {
+            branch()
+        }
+    }
+
     /// Branch on overflow set
-    func bvs() {}
+    func bvs() {
+        if statusRegister.overflow {
+            branch()
+        }
+    }
+
     /// Stop CPU
     func stp() {}
     /// Force break
-    func brk() {}
+    func brk() {
+        let pcHigh = UInt8(programCounter >> 8)
+        let pcLow = UInt8(programCounter)
+        pushToStack(pcHigh)
+        pushToStack(pcLow)
+        var sr = statusRegister
+        sr.break = true
+        pushToStack(sr.value)
+        statusRegister.irqDisabled = true
+        let stLow = read(0xFFFE)
+        let stHigh = read(0xFFFF)
+        programCounter = Int(stLow) | (Int(stHigh) << 8)
+    }
 
     // MARK: - Stack Operations
 
     /// Push accumulator
-    func pha() {}
+    func pha() {
+        pushToStack(accumulator)
+    }
+
     /// Push processor status
-    func php() {}
+    func php() {
+        pushToStack(statusRegister.value)
+    }
+
     /// Pull accumulator
-    func pla() {}
+    func pla() {
+        accumulator = popFromStack()
+    }
+
     /// Pull processor status
-    func plp() {}
+    func plp() {
+        statusRegister.value = popFromStack()
+    }
 
     // MARK: - Flag Manipulation Instructions
 
     /// Clear carry flag
-    func clc() {}
+    func clc() {
+        statusRegister.carry = false
+    }
+
     /// Clear decimal mode
-    func cld() {}
+    func cld() {
+        statusRegister.decimal = false
+    }
+
     /// Clear interrupt disable
-    func cli() {}
+    func cli() {
+        statusRegister.irqDisabled = false
+    }
+
     /// Clear overflow flag
-    func clv() {}
+    func clv() {
+        statusRegister.overflow = false
+    }
+
     /// Set carry flag
-    func sec() {}
+    func sec() {
+        statusRegister.carry = true
+    }
+
     /// Set decimal mode
-    func sed() {}
+    func sed() {
+        statusRegister.decimal = true
+    }
+
     /// Set interrupt disable
-    func sei() {}
+    func sei() {
+        statusRegister.irqDisabled = true
+    }
 
     // MARK: - Comparison Instructions
 
     /// Compare memory and accumulator
-    func cmp() {}
+    func cmp() {
+        cmp(accumulator, read(address))
+    }
+
     /// Compare memory and X register
-    func cpx() {}
+    func cpx() {
+        cmp(xRegister, read(address))
+    }
+
     /// Compare memory and Y register
-    func cpy() {}
+    func cpy() {
+        cmp(yRegister, read(address))
+    }
+
     /// Test bits in memory with accumulator
-    func bit() {}
+    func bit() {
+        let value = read(address)
+        statusRegister.zero = value & accumulator == 0
+        statusRegister.carry = value & 0b0100_0000 != 0
+        statusRegister.negative = value & 0b1000_0000 != 0
+    }
 
     // MARK: - Undocumented/Illegal Instructions
 
@@ -145,42 +374,192 @@ public extension NESCPU {
     func dop() {}
     /// Triple NOP
     func top() {}
-    /// Shift left and OR with accumulator
-    func slo() {}
-    /// Rotate left and AND with accumulator
-    func rla() {}
-    /// Shift right and exclusive OR with accumulator
-    func sre() {}
-    /// Rotate right and add to accumulator
-    func rra() {}
-    /// Store accumulator AND X register
-    func sax() {}
-    /// AND memory with accumulator, then transfer accumulator to index X
-    func ahx() {}
-    /// Store X register high byte
-    func shx() {}
-    /// Store Y register high byte
-    func shy() {}
-    /// Transfer accumulator and stack pointer
-    func tas() {}
-    /// Load accumulator and stack pointer
-    func las() {}
-    /// Load accumulator and X register
-    func lax() {}
-    /// Decrement memory and compare with accumulator
-    func dcp() {}
-    /// Increment memory and subtract from accumulator
-    func isc() {}
-    /// AND immediate with accumulator, then LSR accumulator
-    func alr() {}
-    /// AND immediate with accumulator, then set carry flag
-    func anc() {}
-    /// AND immediate with accumulator, then ROR accumulator
-    func arr() {}
-    /// AND X register with accumulator and store in X
-    func axs() {}
-    /// Transfer accumulator to X register with AND
-    func xaa() {}
+    /// slo – ASL + ORA
+    /// Shifts memory left (ASL), then ORAs it with A.
+    /// Affects flags: N, Z, C.
+    /// Syntax: A = A | (M << 1)
+    func slo() {
+        var memVal = read(address)
+        statusRegister.carry = memVal & 0b1000_0000 != 0
+        memVal <<= 1
+        resultRegister = memVal
+        accumulator |= memVal
+    }
+
+    /// rla – ROL + AND
+    /// Rotates memory left (ROL), then ANDs with A.
+    /// Affects flags: N, Z, C.
+    /// Syntax: A = A & (ROL(M))
+    func rla() {
+        var memVal = read(address)
+        statusRegister.carry = memVal & 0b1000_0000 != 0
+        memVal <<= 1
+        if statusRegister.carry {
+            memVal |= 0b0000_0001
+        }
+        accumulator &= memVal
+    }
+
+    /// sre – LSR + EOR
+    /// Shifts memory right (LSR), then EORs with A.
+    /// Affects flags: N, Z, C.
+    /// Syntax: A = A ^ (M >> 1)
+    func sre() {
+        var memVal = read(address)
+        statusRegister.carry = memVal & 0b0000_0001 != 0
+        memVal >>= 1
+        write(address, memVal)
+        accumulator ^= memVal
+    }
+
+    /// rra – ROR + ADC
+    /// Rotates memory right (ROR), then adds it to A (ADC).
+    /// Affects flags: N, Z, C, V.
+    /// Syntax: A = A + (ROR(M)) + C
+    func rra() {
+        var memVal = read(address)
+        statusRegister.carry = memVal & 0b0000_0001 != 0
+        memVal >>= 1
+        if statusRegister.carry {
+            memVal |= 0b1000_0000
+        }
+        write(address, memVal)
+        resultRegister = memVal
+        accumulator += memVal
+        accumulator += (statusRegister.carry ? 1 : 0)
+    }
+
+    /// sax – Store A & X
+    /// Stores A & X to memory.
+    /// Syntax: M = A & X
+    func sax() {
+        let val = accumulator & xRegister
+        write(address, val)
+    }
+
+    /// ahx – AND + Store High
+    /// Stores (A & X) & high-byte of address + 1.
+    func ahx() {
+        let val = Int(accumulator) & Int(xRegister) & (address >> 8) + 1
+        write(address, UInt8(val))
+    }
+
+    /// shx – Store X & High Byte
+    /// Stores X & (high byte of address + 1) to memory.
+    func shx() {
+        let val = Int(xRegister) & (address >> 8) + 1
+        write(address, UInt8(val))
+    }
+
+    /// shy – Store Y & High Byte
+    /// Same as shx, but uses Y instead of X.
+    func shy() {
+        let val = Int(yRegister) & (address >> 8) + 1
+        write(address, UInt8(val))
+    }
+
+    /// tas – Transfer A & X to SP, then AHX
+    /// SP = A & X, then perform similar to AHX.
+    /// Syntax: SP = A & X, then store A & X & (high byte of target address + 1)  to memory (similar to ahx).
+    func tas() {
+        var val = accumulator & xRegister
+        stackPointer = val
+        val = val & (UInt8(address >> 8) + 1)
+        write(address, val)
+    }
+
+    /// las – Load ANDed A, SP, Mem
+    /// Loads A = X = SP = M & SP.
+    /// Syntax: A = X = SP = M & SP
+    func las() {
+        let val = read(address) & stackPointer
+        accumulator = val
+        stackPointer = val
+        xRegister = val
+    }
+
+    /// lax – Load A and X
+    /// Loads memory into both A and X.
+    /// Syntax: A = X = M
+    func lax() {
+        let val = read(address)
+        accumulator = val
+        xRegister = val
+    }
+
+    /// dcp – DEC + CMP
+    /// Decrements memory, then compares to A.
+    /// Flags set as if A - (M - 1)
+    /// Syntax: M -= 1, then CMP M
+    func dcp() {
+        let val = read(address) - 1
+        write(address, val)
+        cmp(accumulator, val)
+        resultRegister = val
+    }
+
+    /// isc – INC + SBC
+    /// Increments memory, then subtracts from A.
+    /// Syntax: M += 1, then A = A - M - (1 - C)
+    func isc() {
+        let val = read(address) + 1
+        write(address, val)
+        accumulator = accumulator - val - (1 - (statusRegister.carry ? 1 : 0))
+    }
+
+    /// alr – AND + LSR
+    /// A = A & M, then shift right.
+    /// Syntax: A = (A & M) >> 1
+    func alr() {
+        var val = accumulator & read(address)
+        statusRegister.carry = (val & 1) != 0
+        accumulator = val >> 1
+    }
+
+    /// anc – AND + C
+    /// A = A & M, then C = A >> 7
+    /// Forces carry to match bit 7 of result.
+    func anc() {
+        accumulator &= read(address)
+        statusRegister.carry = statusRegister.negative // Accumulator Didset() updates statusRegister.negative
+    }
+
+    /// arr – AND + ROR
+    /// A = A & M, then rotate right.
+    /// C: Set to bit 6 of result.
+    /// V: Set if bit 6 XOR bit 5 is 1.
+    func arr() {
+        let val = accumulator & read(address)
+        statusRegister.carry = (val & 1) != 0
+        accumulator = (val >> 1) | (statusRegister.carry ? 0b1000_0000 : 0)
+        statusRegister.carry = accumulator & 0b0100_0000 != 0
+        let bit6 = (accumulator & 0b0100_0000) != 0
+        let bit5 = (accumulator & 0b0010_0000) != 0
+        statusRegister.overflow = bit6 != bit5
+    }
+
+    /// axs – A & X -> CMP
+    /// Stores A & X - M to X, then CMP with M.
+    /// Often used for weird comparisons.
+    func axs() {
+        let m = read(address)
+        let val = accumulator & xRegister - m
+        xRegister = val
+        cmp(xRegister, m)
+    }
+
+    /// A = (A | 0xEE) & X & M
+    func xaa() {
+        let m = read(address)
+        let val = (accumulator | 0xEE) & xRegister & m
+        accumulator = val
+    }
+
     /// No operation
     func nop() {}
+
+    private func branch() {
+        // TODO: Handle Interruptions, Detect Cross-Page Reading
+        programCounter = address
+    }
 }

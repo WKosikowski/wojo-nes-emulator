@@ -6,38 +6,44 @@
 //
 
 public final class NESCPU {
+    // MARK: Static Properties
+
+    static var fakeAccumulatorAddress = Int.max
+
     // MARK: Properties
+
+    var statusRegister = StatusRegister()
 
     /// Formerly known as A.
     var accumulator: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(accumulator)
         }
     }
 
     /// Formerly known as X.
     var xRegister: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(xRegister)
         }
     }
 
     /// Formerly known as Y.
     var yRegister: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(yRegister)
         }
     }
 
     /// Used for unofficial opcodes.
     var resultRegister: UInt8 = 0 {
         didSet {
-            setZeroNegativeFlags()
+            setZeroNegativeFlags(resultRegister)
         }
     }
 
     /// Represents the Stack Pointer (SP).
-    var stackPointer: UInt8 = 0
+    var stackPointer: UInt8 = 0xFF
     /// Represents the Program Counter (PC). Although 6502 uses a 16-bit PC.
     var programCounter: Int = 0
 
@@ -58,9 +64,42 @@ public final class NESCPU {
 
     // MARK: Functions
 
-    func setZeroNegativeFlags() {}
+    func setZeroNegativeFlags(_ register: UInt8) {
+        statusRegister.zero = register == 0
+        statusRegister.negative = register & 0b1000_0000 != 0
+    }
 
     func read(_ address: Int) -> UInt8 {
-        temporaryMemory[address]
+        if address == NESCPU.fakeAccumulatorAddress {
+            return accumulator
+        }
+        return temporaryMemory[address]
+    }
+
+    func write(_ address: Int, _ value: UInt8) {
+        if address == NESCPU.fakeAccumulatorAddress {
+            accumulator = value
+        } else {
+            temporaryMemory[address] = value
+        }
+    }
+
+    func pushToStack(_ value: UInt8) {
+        write(Int(stackPointer) | 0x100, value)
+        if stackPointer == 0 {
+            stackPointer = 0xFF
+        } else {
+            stackPointer -= 1
+        }
+    }
+
+    func popFromStack() -> UInt8 {
+        stackPointer += 1
+        return read(Int(stackPointer))
+    }
+
+    func cmp(_ reg: UInt8, _ mem: UInt8) {
+        statusRegister.carry = reg >= mem
+        resultRegister = UInt8(reg &- mem)
     }
 }
