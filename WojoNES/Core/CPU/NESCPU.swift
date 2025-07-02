@@ -6,6 +6,10 @@
 //
 
 public final class NESCPU {
+    // MARK: Static Properties
+
+    static var fakeAccumulatorAddress = Int.max
+
     // MARK: Properties
 
     var statusRegister = StatusRegister()
@@ -66,11 +70,18 @@ public final class NESCPU {
     }
 
     func read(_ address: Int) -> UInt8 {
-        temporaryMemory[address]
+        if address == NESCPU.fakeAccumulatorAddress {
+            return accumulator
+        }
+        return temporaryMemory[address]
     }
 
     func write(_ address: Int, _ value: UInt8) {
-        temporaryMemory[address] = value
+        if address == NESCPU.fakeAccumulatorAddress {
+            accumulator = value
+        } else {
+            temporaryMemory[address] = value
+        }
     }
 
     func pushToStack(_ value: UInt8) {

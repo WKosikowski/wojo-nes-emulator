@@ -7,7 +7,9 @@
 
 public extension NESCPU {
     /// implied, accumulator
-    func imp() {}
+    func imp() {
+        address = NESCPU.fakeAccumulatorAddress
+    }
 
     /// immediate
     func imm() {
