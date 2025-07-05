@@ -20,7 +20,9 @@ struct NESCPUAddressingTests {
     @Test("Zero Page Addressing Mode")
     func zeroPage() throws {
         let cpu = NESCPU()
-        cpu.temporaryMemory[0x2000] = 0x42
+        let bus = NESBus()
+        cpu.connect(bus)
+        bus.memory[0x2000] = 0x42
         cpu.programCounter = 0x2000
         cpu.zpg()
         #expect(cpu.address == 0x42)
@@ -30,8 +32,10 @@ struct NESCPUAddressingTests {
     @Test("Zero Page,X Addressing Mode Wraps Around")
     func zeroPageX() throws {
         let cpu = NESCPU()
+        let bus = NESBus()
+        cpu.connect(bus)
         cpu.xRegister = 0x10
-        cpu.temporaryMemory[0x1000] = 0xF5
+        bus.memory[0x1000] = 0xF5
         cpu.programCounter = 0x1000
         cpu.zpx()
         #expect(cpu.address == (0xF5 + 0x10) & 0xFF)
@@ -40,7 +44,9 @@ struct NESCPUAddressingTests {
     @Test("Relative Addressing Forward Branch")
     func relativeForward() throws {
         let cpu = NESCPU()
-        cpu.temporaryMemory[0x3000] = 0x06
+        let bus = NESBus()
+        cpu.connect(bus)
+        bus.memory[0x3000] = 0x06
         cpu.programCounter = 0x3000
         cpu.rel()
         #expect(cpu.address == 0x3001 + 6)
@@ -49,7 +55,9 @@ struct NESCPUAddressingTests {
     @Test("Relative Addressing Backward Branch")
     func relativeBackward() throws {
         let cpu = NESCPU()
-        cpu.temporaryMemory[0x3000] = 0xFA // -6
+        let bus = NESBus()
+        cpu.connect(bus)
+        bus.memory[0x3000] = 0xFA // -6
         cpu.programCounter = 0x3000
         cpu.rel()
         #expect(cpu.address == 0x3001 - 6)
@@ -58,8 +66,10 @@ struct NESCPUAddressingTests {
     @Test("Absolute Addressing")
     func absolute() throws {
         let cpu = NESCPU()
-        cpu.temporaryMemory[0x1000] = 0x34
-        cpu.temporaryMemory[0x1001] = 0x12
+        let bus = NESBus()
+        cpu.connect(bus)
+        bus.memory[0x1000] = 0x34
+        bus.memory[0x1001] = 0x12
         cpu.programCounter = 0x1000
         cpu.abs()
         #expect(cpu.address == 0x1234)
@@ -68,10 +78,12 @@ struct NESCPUAddressingTests {
     @Test("Indirect,Y Addressing")
     func indirectY() throws {
         let cpu = NESCPU()
+        let bus = NESBus()
+        cpu.connect(bus)
         cpu.yRegister = 0x04
-        cpu.temporaryMemory[0x1000] = 0x10
-        cpu.temporaryMemory[0x10] = 0x78
-        cpu.temporaryMemory[0x11] = 0x56
+        bus.memory[0x1000] = 0x10
+        bus.memory[0x10] = 0x78
+        bus.memory[0x11] = 0x56
         cpu.programCounter = 0x1000
         cpu.idy()
         #expect(cpu.address == 0x5678 + 0x04)
@@ -80,9 +92,11 @@ struct NESCPUAddressingTests {
     @Test("Absolute,X Addressing Mode")
     func absoluteX() throws {
         let cpu = NESCPU()
+        let bus = NESBus()
+        cpu.connect(bus)
         cpu.xRegister = 0x01
-        cpu.temporaryMemory[0x1000] = 0x00
-        cpu.temporaryMemory[0x1001] = 0x20
+        bus.memory[0x1000] = 0x00
+        bus.memory[0x1001] = 0x20
         cpu.programCounter = 0x1000
         cpu.abx()
         #expect(cpu.address == 0x2000 + 0x01)
@@ -91,9 +105,11 @@ struct NESCPUAddressingTests {
     @Test("Absolute,Y Addressing Mode")
     func absoluteY() throws {
         let cpu = NESCPU()
+        let bus = NESBus()
+        cpu.connect(bus)
         cpu.yRegister = 0x05
-        cpu.temporaryMemory[0x1000] = 0x10
-        cpu.temporaryMemory[0x1001] = 0x30
+        bus.memory[0x1000] = 0x10
+        bus.memory[0x1001] = 0x30
         cpu.programCounter = 0x1000
         cpu.aby()
         #expect(cpu.address == 0x3010 + 0x05)
@@ -102,10 +118,12 @@ struct NESCPUAddressingTests {
     @Test("Indexed Indirect (Indirect,X) Addressing Mode")
     func indexedIndirect() throws {
         let cpu = NESCPU()
+        let bus = NESBus()
+        cpu.connect(bus)
         cpu.xRegister = 0x04
-        cpu.temporaryMemory[0x1000] = 0x10
-        cpu.temporaryMemory[0x14] = 0x78
-        cpu.temporaryMemory[0x15] = 0x56
+        bus.memory[0x1000] = 0x10
+        bus.memory[0x14] = 0x78
+        bus.memory[0x15] = 0x56
         cpu.programCounter = 0x1000
         cpu.idx()
         #expect(cpu.address == 0x5678)
@@ -114,10 +132,12 @@ struct NESCPUAddressingTests {
     @Test("Indirect Indexed (Indirect),Y Addressing Mode")
     func indirectIndexed() throws {
         let cpu = NESCPU()
+        let bus = NESBus()
+        cpu.connect(bus)
         cpu.yRegister = 0x02
-        cpu.temporaryMemory[0x1000] = 0x20
-        cpu.temporaryMemory[0x20] = 0x00
-        cpu.temporaryMemory[0x21] = 0x40
+        bus.memory[0x1000] = 0x20
+        bus.memory[0x20] = 0x00
+        bus.memory[0x21] = 0x40
         cpu.programCounter = 0x1000
         cpu.idy()
         #expect(cpu.address == 0x4000 + 0x02)

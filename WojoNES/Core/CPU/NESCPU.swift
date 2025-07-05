@@ -57,9 +57,6 @@ public final class NESCPU: CPU {
     /// Holds the temporary address during opcode execution
     var address: Int = 0
 
-    /// needed for tests, will be removed later
-    var temporaryMemory: [UInt8] = Array(repeating: 0, count: 0x10000)
-
     // MARK: Lifecycle
 
     init() {
@@ -81,14 +78,14 @@ public final class NESCPU: CPU {
         if address == NESCPU.fakeAccumulatorAddress {
             return accumulator
         }
-        return temporaryMemory[address]
+        return bus.read(address: address)
     }
 
     func write(_ address: Int, _ value: UInt8) {
         if address == NESCPU.fakeAccumulatorAddress {
             accumulator = value
         } else {
-            temporaryMemory[address] = value
+            bus.write(address: address, data: value)
         }
     }
 
