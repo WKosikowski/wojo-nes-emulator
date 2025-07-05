@@ -15,7 +15,7 @@ import Testing
 struct NESTestsSupportedTests {
     /// Test loading and validating a valid NES file from the test bundle
     @Test
-    func documentedInstructionsTest() throws {
+    func allInstructionsTest() throws {
         let bundle = Bundle(for: A.self)
         guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
             throw TestError("Could not find sample.nes in test bundle")

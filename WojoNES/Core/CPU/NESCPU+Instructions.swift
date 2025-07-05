@@ -33,14 +33,14 @@ public extension NESCPU {
 
     /// Increment memory
     func inc() {
-        let value = read(address) + 1
+        let value = read(address) &+ 1
         write(address, value)
         resultRegister = value // to set zero and negative flags
     }
 
     /// Decrement memory
     func dec() {
-        let value = read(address) - 1
+        let value = read(address) &- 1
         write(address, value)
         resultRegister = value // to set zero and negative flags
     }
@@ -189,7 +189,7 @@ public extension NESCPU {
     func jsr() {
         programCounter -= 1
         let highByte = UInt8(programCounter >> 8)
-        let lowByte = UInt8(programCounter)
+        let lowByte = UInt8(programCounter & 0b1111_1111)
         pushToStack(highByte)
         pushToStack(lowByte)
         programCounter = address
@@ -272,7 +272,7 @@ public extension NESCPU {
     /// Force break
     func brk() {
         let pcHigh = UInt8(programCounter >> 8)
-        let pcLow = UInt8(programCounter)
+        let pcLow = UInt8(programCounter & 0b1111_1111)
         pushToStack(pcHigh)
         pushToStack(pcLow)
         var sr = statusRegister

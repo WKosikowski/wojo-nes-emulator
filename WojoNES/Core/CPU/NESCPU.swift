@@ -99,7 +99,7 @@ public final class NESCPU: CPU {
     }
 
     func popFromStack() -> UInt8 {
-        stackPointer += 1
+        stackPointer = stackPointer &+ 1
         return read(Int(stackPointer))
     }
 
@@ -114,6 +114,7 @@ extension NESCPU {
         let opcode = read(programCounter)
         programCounter += 1
         let operation = operations[Int(opcode)]
+//        print(operation.name)
         switch operation.addressingMode {
             case .implied:
                 imp()

@@ -27,8 +27,8 @@ class NESBus: Bus {
             case 0x8000...:
                 return cartridge.read(address: address & 0x1FFF)
             default:
-                assertionFailure("Not implemented")
-                return 0
+                return ram[address]
+                print(" !!!!!!!!!!!!!!    Not implemented  !!!!!!!!!!!!!!!! ")
         }
     }
 
