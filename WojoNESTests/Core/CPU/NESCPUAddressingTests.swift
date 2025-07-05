@@ -22,7 +22,7 @@ struct NESCPUAddressingTests {
         let cpu = NESCPU()
         let bus = NESBus()
         cpu.connect(bus)
-        bus.memory[0x2000] = 0x42
+        bus.ram[0x2000] = 0x42
         cpu.programCounter = 0x2000
         cpu.zpg()
         #expect(cpu.address == 0x42)
@@ -35,7 +35,7 @@ struct NESCPUAddressingTests {
         let bus = NESBus()
         cpu.connect(bus)
         cpu.xRegister = 0x10
-        bus.memory[0x1000] = 0xF5
+        bus.ram[0x1000] = 0xF5
         cpu.programCounter = 0x1000
         cpu.zpx()
         #expect(cpu.address == (0xF5 + 0x10) & 0xFF)
@@ -46,7 +46,7 @@ struct NESCPUAddressingTests {
         let cpu = NESCPU()
         let bus = NESBus()
         cpu.connect(bus)
-        bus.memory[0x3000] = 0x06
+        bus.ram[0x3000] = 0x06
         cpu.programCounter = 0x3000
         cpu.rel()
         #expect(cpu.address == 0x3001 + 6)
@@ -57,7 +57,7 @@ struct NESCPUAddressingTests {
         let cpu = NESCPU()
         let bus = NESBus()
         cpu.connect(bus)
-        bus.memory[0x3000] = 0xFA // -6
+        bus.ram[0x3000] = 0xFA // -6
         cpu.programCounter = 0x3000
         cpu.rel()
         #expect(cpu.address == 0x3001 - 6)
@@ -68,8 +68,8 @@ struct NESCPUAddressingTests {
         let cpu = NESCPU()
         let bus = NESBus()
         cpu.connect(bus)
-        bus.memory[0x1000] = 0x34
-        bus.memory[0x1001] = 0x12
+        bus.ram[0x1000] = 0x34
+        bus.ram[0x1001] = 0x12
         cpu.programCounter = 0x1000
         cpu.abs()
         #expect(cpu.address == 0x1234)
@@ -81,9 +81,9 @@ struct NESCPUAddressingTests {
         let bus = NESBus()
         cpu.connect(bus)
         cpu.yRegister = 0x04
-        bus.memory[0x1000] = 0x10
-        bus.memory[0x10] = 0x78
-        bus.memory[0x11] = 0x56
+        bus.ram[0x1000] = 0x10
+        bus.ram[0x10] = 0x78
+        bus.ram[0x11] = 0x56
         cpu.programCounter = 0x1000
         cpu.idy()
         #expect(cpu.address == 0x5678 + 0x04)
@@ -95,8 +95,8 @@ struct NESCPUAddressingTests {
         let bus = NESBus()
         cpu.connect(bus)
         cpu.xRegister = 0x01
-        bus.memory[0x1000] = 0x00
-        bus.memory[0x1001] = 0x20
+        bus.ram[0x1000] = 0x00
+        bus.ram[0x1001] = 0x20
         cpu.programCounter = 0x1000
         cpu.abx()
         #expect(cpu.address == 0x2000 + 0x01)
@@ -108,8 +108,8 @@ struct NESCPUAddressingTests {
         let bus = NESBus()
         cpu.connect(bus)
         cpu.yRegister = 0x05
-        bus.memory[0x1000] = 0x10
-        bus.memory[0x1001] = 0x30
+        bus.ram[0x1000] = 0x10
+        bus.ram[0x1001] = 0x30
         cpu.programCounter = 0x1000
         cpu.aby()
         #expect(cpu.address == 0x3010 + 0x05)
@@ -121,9 +121,9 @@ struct NESCPUAddressingTests {
         let bus = NESBus()
         cpu.connect(bus)
         cpu.xRegister = 0x04
-        bus.memory[0x1000] = 0x10
-        bus.memory[0x14] = 0x78
-        bus.memory[0x15] = 0x56
+        bus.ram[0x1000] = 0x10
+        bus.ram[0x14] = 0x78
+        bus.ram[0x15] = 0x56
         cpu.programCounter = 0x1000
         cpu.idx()
         #expect(cpu.address == 0x5678)
@@ -135,9 +135,9 @@ struct NESCPUAddressingTests {
         let bus = NESBus()
         cpu.connect(bus)
         cpu.yRegister = 0x02
-        bus.memory[0x1000] = 0x20
-        bus.memory[0x20] = 0x00
-        bus.memory[0x21] = 0x40
+        bus.ram[0x1000] = 0x20
+        bus.ram[0x20] = 0x00
+        bus.ram[0x21] = 0x40
         cpu.programCounter = 0x1000
         cpu.idy()
         #expect(cpu.address == 0x4000 + 0x02)

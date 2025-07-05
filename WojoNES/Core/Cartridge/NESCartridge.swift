@@ -81,10 +81,15 @@ class NESCartridge: Cartridge {
 
     // MARK: Functions
 
-    func write(data: Data, address: UInt16) {}
+    func write(data: Data, address: Int) {
+        assertionFailure("not implemented")
+    }
 
-    func read(address: UInt16) -> UInt8 {
-        1
+    func read(address: Int) -> UInt8 {
+        switch address {
+            default:
+                prgROM[address]
+        }
     }
 
     func reset() {}
