@@ -9,7 +9,7 @@ import Foundation
 // MARK: - NESCartridge
 
 /// Represents an NES cartridge, including header and ROM data
-struct NESCartridge {
+struct NESCartridge: Cartridge {
     // MARK: Static Properties
 
     static let headerSize = 16 // NES header is 16 bytes
@@ -28,6 +28,7 @@ struct NESCartridge {
     let prgROM: Data // PRG ROM data
     let chrROM: Data // CHR ROM data
     let trainer: Data? // Trainer data (512 bytes, if present)
+    var bus: NESBus!
 
     // MARK: Computed Properties
 
@@ -77,4 +78,14 @@ struct NESCartridge {
         // Extract CHR ROM
         chrROM = data.subdata(in: offset ..< offset + header.chrROMSize)
     }
+
+    // MARK: Functions
+
+    func write(data: Data, address: UInt16) {}
+
+    func read(address: UInt16) -> UInt8 {
+        1
+    }
+
+    func reset() {}
 }
