@@ -21,10 +21,12 @@ class NESBus: Bus {
     // MARK: Functions
 
     func read(address: Int) -> UInt8 {
-        1
+        memory[address]
     }
 
-    func write(address: Int, data: UInt8) {}
+    func write(address: Int, data: UInt8) {
+        memory[address] = data
+    }
 
     func connect(_ ppu: PPU) {
         self.ppu = ppu
