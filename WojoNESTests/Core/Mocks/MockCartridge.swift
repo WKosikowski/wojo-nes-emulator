@@ -8,9 +8,9 @@ import Foundation
 @testable import WojoNES
 
 class MockCartridge: Cartridge {
-    func write(data: Data, address: UInt16) {}
+    func write(data: Data, address: Int) {}
 
-    func read(address: UInt16) -> UInt8 {
+    func read(address: Int) -> UInt8 {
         1
     }
 
