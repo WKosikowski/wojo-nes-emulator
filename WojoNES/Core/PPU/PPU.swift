@@ -5,6 +5,6 @@
 //  Created by Wojciech Kosikowski on 05/07/2025.
 //
 
-protocol PPU {
+protocol PPU: AnyObject {
     func connect(_ bus: Bus)
 }

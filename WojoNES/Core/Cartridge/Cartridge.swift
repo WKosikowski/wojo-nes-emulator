@@ -6,7 +6,7 @@
 //
 import Foundation
 
-protocol Cartridge {
+protocol Cartridge: AnyObject {
     func write(data: Data, address: UInt16)
     func read(address: UInt16) -> UInt8
     func reset()

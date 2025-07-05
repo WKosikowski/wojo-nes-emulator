@@ -5,7 +5,7 @@
 //  Created by Wojciech Kosikowski on 05/07/2025.
 //
 
-protocol Emulator {
+protocol Emulator: AnyObject {
     func start()
     func pause()
     func reset()

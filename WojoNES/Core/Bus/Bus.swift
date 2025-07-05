@@ -5,7 +5,7 @@
 //  Created by Wojciech Kosikowski on 05/07/2025.
 //
 
-protocol Bus {
+protocol Bus: AnyObject {
     func read(address: Int) -> UInt8
     func write(address: Int, data: UInt8)
     func connect(_ ppu: PPU)

@@ -9,7 +9,7 @@ import Foundation
 // MARK: - NESCartridge
 
 /// Represents an NES cartridge, including header and ROM data
-struct NESCartridge: Cartridge {
+class NESCartridge: Cartridge {
     // MARK: Static Properties
 
     static let headerSize = 16 // NES header is 16 bytes
