@@ -1,0 +1,22 @@
+//
+//  NESAPU.swift
+//  WojoNES
+//
+//  Created by Wojciech Kosikowski on 05/07/2025.
+//
+
+class NESAPU: APU {
+    // MARK: Properties
+
+    var bus: Bus!
+
+    // MARK: Lifecycle
+
+    init() {}
+
+    // MARK: Functions
+
+    func connect(_ bus: Bus) {
+        self.bus = bus
+    }
+}

@@ -7,12 +7,14 @@
 
 // MARK: - NESCPU
 
-public final class NESCPU {
+public final class NESCPU: CPU {
     // MARK: Static Properties
 
     static var fakeAccumulatorAddress = Int.max
 
     // MARK: Properties
+
+    var bus: Bus!
 
     var statusRegister = StatusRegister()
 
@@ -65,6 +67,10 @@ public final class NESCPU {
     }
 
     // MARK: Functions
+
+    func connect(_ bus: any Bus) {
+        self.bus = bus
+    }
 
     func setZeroNegativeFlags(_ register: UInt8) {
         statusRegister.zero = register == 0
@@ -295,4 +301,8 @@ extension NESCPU {
                 nop()
         }
     }
+
+    func handleIRQ() {}
+
+    func handleNMI() {}
 }
