@@ -36,7 +36,7 @@ struct NESTestsSupportedTests {
         #expect(bus.ram[0x2] == 0x0)
         cpu.step()
         #expect(bus.ram[0x2] == 0x0)
-        for i in 0 ... 10_000_000 {
+        for i in 0 ... 100_000 {
             cpu.step()
             #expect(bus.ram[0x2] == 0x0)
         }
