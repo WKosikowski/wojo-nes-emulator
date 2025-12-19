@@ -23,7 +23,7 @@
 /// 0: Name table X (bit 0 of base nametable) (nameTableX)
 ///
 /// Each register field is represented by its bit magnitude and stored as an integer
-/// (instead of a `Bool`). This makes direct bit manipulation and packing/unpacking
+/// instead of a Boolean. This makes direct bit manipulation and packing/unpacking
 /// the 8-bit control register value straightforward and efficient.
 ///
 /// Reference: https://www.nesdev.org/wiki/PPU_registers#Control_($2000)
@@ -32,53 +32,47 @@ public struct ControlRegister {
 
     /// Name table X select (bit 0)
     /// Chooses left/right nametable for horizontal mirroring.
-    /// Values: 0 or 1
     public var nameTableX: Int = 0
 
     /// Name table Y select (bit 1)
     /// Chooses top/bottom nametable for vertical mirroring.
-    /// Values: 0 or 1
     public var nameTableY: Int = 0
 
     /// VRAM address increment (bit 2)
     /// Determines how the PPU internal address increments after a CPU read/write
     /// to PPU data (0 = increment by 1, 1 = increment by 32). Stored as the
-    /// actual increment value (1 or 32) for convenience.
+    /// actual increment value of 1 or 32 for convenience.
     public var increment: Int = 1
 
     /// Sprite pattern table (bit 3)
-    /// Selects the pattern table used for 8x8 sprites (0 -> $0000, 1 -> $1000)
+    /// Selects the pattern table used for 8x8 sprites (0 is $0000, 1 is $1000)
     public var patternSprite: Int = 0
 
     /// Background pattern table (bit 4)
-    /// Selects the pattern table used for background tiles (0 -> $0000, 1 -> $1000)
+    /// Selects the pattern table used for background tiles (0 is $0000, 1 is $1000)
     public var patternBg: Int = 0
 
     /// Sprite size (bit 5)
-    /// When 0 sprites are 8x8, when 1 sprites are 8x16. Stored as pixel height
-    /// (8 or 16) for convenience.
+    /// When 0 sprites are 8x8, when 1 sprites are 8x16. Stored as pixel height 8 or 16 for convenience.
     public var spriteSize: Int = 8
 
     /// PPU master/slave flag (bit 6)
-    /// Unused. Kept for compatibility with register layout.
+    /// Rarely used on NES hardware (used for external PPU chaining)
     public var slaveMode: Bool = false
 
     /// Enable NMI on VBlank (bit 7)
-    /// When set the PPU will generate a Non-Maskable Interrupt (NMI) at the
-    /// start of vertical blanking. The CPU can use this to perform VBlank-safe
-    /// updates to PPU state (VRAM updates, palette, etc.).
+    /// When set the PPU will generate an NMI at
+    /// the start of vertical blanking. The CPU can use this to perform VBlank-safe
+    /// updates to PPU state .
     public var enableNMI: Bool = false
 
-    /// Temporary data latch used for writes/reads (open-bus behavior tracking)
-    /// This field is present in the struct for convenience; the real PPU may
-    /// expose open-bus values when reading certain registers.
+    /// Temporary data latch used for writes/reads - open-bus behavior tracking.
+    /// This field is present for convenience
     public var dataLatch: UInt8 = 0
 
     // MARK: Computed Properties
 
-    /// Packs/unpacks the individual fields into the 8-bit control register
-    /// representation. This is used when reading/writing the register as a
-    /// single byte. Get returns the packed value; set decodes into fields.
+    /// Packs/unpacks the individual fields into the 8-bit control register representation.
     public var value: Int {
         get {
             var value = 0
