@@ -10,7 +10,7 @@ class NESPPU: PPU {
 
     var bus: Bus!
 
-    var frameBuffer: [UInt32]
+    var frameBuffer: [UInt32] = []
 
     private var vram: [UInt8] = []
 
@@ -24,6 +24,10 @@ class NESPPU: PPU {
 
 //    private var controlRegister: ControlRegister
 
+    private var mask: UInt8 = 0
+
+    private var statusRegister: StatusRegister = .init()
+
     // MARK: Lifecycle
 
     init() {}
@@ -35,20 +39,16 @@ class NESPPU: PPU {
     }
 
     func frameReady() -> Bool {
-        <#code#>
+        false
     }
 
-    func step() {
-        <#code#>
-    }
+    func step() {}
 
     func read(_ address: UInt16) -> UInt8 {
-        <#code#>
+        0
     }
 
-    func write(address: UInt16, value: UInt8) {
-        <#code#>
-    }
+    func write(address: UInt16, value: UInt8) {}
 
     private func renderScanline() {}
 
