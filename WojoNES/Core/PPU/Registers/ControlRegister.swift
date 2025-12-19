@@ -60,8 +60,7 @@ public struct ControlRegister {
     public var spriteSize: Int = 8
 
     /// PPU master/slave flag (bit 6)
-    /// Rarely used on NES hardware (used for external PPU chaining). Kept for
-    /// compatibility with register layout.
+    /// Unused. Kept for compatibility with register layout.
     public var slaveMode: Bool = false
 
     /// Enable NMI on VBlank (bit 7)
@@ -80,7 +79,7 @@ public struct ControlRegister {
     /// Packs/unpacks the individual fields into the 8-bit control register
     /// representation. This is used when reading/writing the register as a
     /// single byte. Get returns the packed value; set decodes into fields.
-    public var register: Int {
+    public var value: Int {
         get {
             var value = 0
             // Bits 0-1: base nametable
