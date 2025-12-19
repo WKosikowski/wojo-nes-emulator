@@ -8,7 +8,7 @@
 import Testing
 @testable import WojoNES
 
-@Suite("PPU Control Register")
+@Suite("PPU")
 struct ControlRegisterTests {
     // MARK: - NameTable Selection Tests
 
