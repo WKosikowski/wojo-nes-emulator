@@ -45,4 +45,48 @@ struct PPUStatusRegisterTests {
         #expect(statusRegister.spriteZeroHit == true)
         #expect(statusRegister.verticalBlank == true)
     }
+
+    @Test("Get Value all false")
+    func valueGetter_allFlagsFalse() {
+        let status = PPUStatusRegister(
+            spriteOverflow: false,
+            spriteZeroHit: false,
+            verticalBlank: false
+        )
+
+        #expect(status.value == 0x00)
+    }
+
+    @Test("Get Value spriteOverflow true")
+    func valueGetter_spriteOverflowTrue() {
+        let status = PPUStatusRegister(
+            spriteOverflow: true,
+            spriteZeroHit: false,
+            verticalBlank: false
+        )
+
+        #expect(status.value == 0x20)
+    }
+
+    @Test("Get Value SpriteZeroHit True")
+    func valueGetter_spriteZeroHitOnly() {
+        let status = PPUStatusRegister(
+            spriteOverflow: false,
+            spriteZeroHit: true,
+            verticalBlank: false
+        )
+
+        #expect(status.value == 0x40)
+    }
+
+    @Test("Get Value all true")
+    func valueGetter_allFlagsTrue() {
+        let status = PPUStatusRegister(
+            spriteOverflow: true,
+            spriteZeroHit: true,
+            verticalBlank: true
+        )
+
+        #expect(status.value == 0xE0)
+    }
 }
