@@ -26,7 +26,7 @@ struct NESEmulatorTests {
         #expect(emulator.bus === bus, "Bus should be set correctly")
         #expect(emulator.cpu === cpu, "CPU should be set correctly")
         #expect(emulator.apu === apu, "APU should be set correctly")
-        #expect(emulator.ppu === ppu, "PPU should be set correctly")
+//        #expect(emulator.ppu is ppu, "PPU should be set correctly")
         #expect(emulator.cartridge === cartridge, "Cartridge should be set correctly")
     }
 

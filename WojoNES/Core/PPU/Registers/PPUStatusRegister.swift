@@ -14,7 +14,7 @@ struct PPUStatusRegister {
 
     // MARK: Computed Properties
 
-    public var register: Int {
+    public var value: Int {
         get {
             var result = 0
             if spriteOverflow { result |= 0x20 }
