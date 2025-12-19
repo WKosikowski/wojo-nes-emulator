@@ -8,7 +8,7 @@
 import Testing
 @testable import WojoNES
 
-@Suite("PPUStatusRegister")
+@Suite("PPU")
 struct PPUStatusRegisterTests {
     @Test("Set Value spriteOverflow True")
     func spriteOverflowTrue() {
