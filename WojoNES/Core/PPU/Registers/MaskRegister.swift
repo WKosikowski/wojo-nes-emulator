@@ -7,12 +7,12 @@
 
 /// PPU Mask Register (0x2001)
 ///
-/// Controls what the PPU renders and how colors are emphasized. The bits are
+/// Controls what the PPU renders and how colours are emphasised. The bits are
 /// laid out (bit 7 -> bit 0):
 ///
-/// 7: Emphasize Blue
-/// 6: Emphasize Green
-/// 5: Emphasize Red
+/// 7: Emphasise Blue
+/// 6: Emphasise Green
+/// 5: Emphasise Red
 /// 4: Show sprites
 /// 3: Show background
 /// 2: Show sprites in leftmost 8 pixels
@@ -26,7 +26,7 @@ public struct MaskRegister {
     /// between 0x3F and 0x30 when greyscale is enabled.
     private(set) var mask: Int = 0x3F
 
-    /// Greyscale rendering (bit 0). When enabled the PPU renders in greyscale.
+    /// Greyscale rendering (bit 0). When enabled the PPU renders in grayscale.
     public var greyscale: Bool = false {
         didSet {
             mask = greyscale ? 0x30 : 0x3F

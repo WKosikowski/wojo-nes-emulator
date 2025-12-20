@@ -19,8 +19,8 @@
 /// 4: Background pattern table (0: $0000, 1: $1000)
 /// 3: Sprite pattern table (0: $0000, 1: $1000)
 /// 2: VRAM address increment per CPU read/write of PPUDATA (0: +1, 1: +32)
-/// 1: Name table Y (bit 1 of base nametable) (nameTableY)
-/// 0: Name table X (bit 0 of base nametable) (nameTableX)
+/// 1: Name table Y (bit 1 of base nametable)
+/// 0: Name table X (bit 0 of base nametable)
 ///
 /// Each register field is represented by its bit magnitude and stored as an integer
 /// instead of a Boolean. This makes direct bit manipulation and packing/unpacking
@@ -40,16 +40,16 @@ public struct ControlRegister {
 
     /// VRAM address increment (bit 2)
     /// Determines how the PPU internal address increments after a CPU read/write
-    /// to PPU data (0 = increment by 1, 1 = increment by 32). Stored as the
+    /// to PPU data (0 means increment by 1, 1 means increment by 32). Stored as the
     /// actual increment value of 1 or 32 for convenience.
     public var increment: Int = 1
 
     /// Sprite pattern table (bit 3)
-    /// Selects the pattern table used for 8x8 sprites (0 is $0000, 1 is $1000)
+    /// Selects the pattern table used for 8x8 sprites (0 is 0x0000, 1 is 0x1000)
     public var patternSprite: Int = 0
 
     /// Background pattern table (bit 4)
-    /// Selects the pattern table used for background tiles (0 is $0000, 1 is $1000)
+    /// Selects the pattern table used for background tiles (0 is 0x0000, 1 is 0x1000)
     public var patternBg: Int = 0
 
     /// Sprite size (bit 5)
@@ -57,7 +57,7 @@ public struct ControlRegister {
     public var spriteSize: Int = 8
 
     /// PPU master/slave flag (bit 6)
-    /// Rarely used on NES hardware (used for external PPU chaining)
+    /// Unused. Kept for compatibility.
     public var slaveMode: Bool = false
 
     /// Enable NMI on VBlank (bit 7)
