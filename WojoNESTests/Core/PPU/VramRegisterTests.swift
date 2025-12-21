@@ -15,15 +15,15 @@ struct VramRegisterTests {
     @Test
     func fineYValue_getAndSet_updatesFineY() {
         var vram = VramRegister()
-        vram.fineYValue = 5
+        vram.fineY = 5
 
-        #expect(vram.fineYValue == 5)
+        #expect(vram.fineY == 5)
     }
 
     @Test
     func fineYValue_setsA12ToggledOnRisingLSB() {
         var vram = VramRegister(fineY: 0)
-        vram.fineYValue = 1
+        vram.fineY = 1
 
         #expect(vram.a12Toggled == true)
     }
@@ -31,7 +31,7 @@ struct VramRegisterTests {
     @Test
     func fineYValue_doesNotToggleA12WhenNoRisingEdge() {
         var vram = VramRegister(fineY: 1)
-        vram.fineYValue = 3
+        vram.fineY = 3
 
         #expect(vram.a12Toggled == false)
     }
@@ -39,7 +39,7 @@ struct VramRegisterTests {
     @Test
     func fineYValue_fallingEdgeDoesNotToggleA12() {
         var vram = VramRegister(fineY: 1)
-        vram.fineYValue = 0
+        vram.fineY = 0
 
         #expect(vram.a12Toggled == false)
     }
@@ -71,7 +71,7 @@ struct VramRegisterTests {
         var vram = VramRegister()
         vram.address = 0b101_1010_0100_1101
 
-        #expect(vram.fineYValue == 0b101)
+        #expect(vram.fineY == 0b101)
         #expect(vram.nameTableY == 1)
         #expect(vram.nameTableX == 0)
         #expect(vram.coarseY == 0b10010)
@@ -83,7 +83,7 @@ struct VramRegisterTests {
         var vram = VramRegister()
         vram.address = 0xFFFF
 
-        #expect(vram.fineYValue <= 7)
+        #expect(vram.fineY <= 7)
     }
 
     @Test
@@ -140,7 +140,7 @@ struct VramRegisterTests {
 
         #expect(vram.nameTableY == 0)
         #expect(vram.coarseY == 0b01010)
-        #expect(vram.fineYValue == 0b011)
+        #expect(vram.fineY == 0b011)
     }
 
     // MARK: - Latch-Based Behavior
@@ -179,7 +179,7 @@ struct VramRegisterTests {
         vram.setScroll(0x00)
         vram.setScroll(0b0101_0100)
 
-        #expect(vram.fineYValue == 0b100)
+        #expect(vram.fineY == 0b100)
         #expect(vram.coarseY == 0b01010)
     }
 }

@@ -58,7 +58,7 @@ public struct VramRegister {
 
     /// Fine Y scroll (3 bits, range 0-7) - Private to ensure a12Toggled updates.
     /// Vertical pixel offset within the current 8-pixel tile row.
-    private var fineY: Int
+    private var _fineY: Int
 
     // MARK: Computed Properties
 
@@ -68,12 +68,12 @@ public struct VramRegister {
     ///
     /// - Get: Returns current fine Y value (0-7)
     /// - Set: Updates fine Y and checks for 0→1 transition on bit 0
-    public var fineYValue: Int {
-        get { fineY }
+    public var fineY: Int {
+        get { _fineY }
         set {
             // Detect transition: was bit 0 clear, and now is it set?
-            a12Toggled = (fineY & 1) == 0 && (newValue & 1) == 1
-            fineY = newValue
+            a12Toggled = (_fineY & 1) == 0 && (newValue & 1) == 1
+            _fineY = newValue
         }
     }
 
@@ -85,13 +85,13 @@ public struct VramRegister {
     ///
     /// Layout: [Fine Y (3)] [NT Y (1)] [NT X (1)] [Coarse Y (5)] [Coarse X (5)]
     public var address: Int {
-        get { (fineY << 12) | (nameTableY << 11) | (nameTableX << 10) | (coarseY << 5) | coarseX }
+        get { (_fineY << 12) | (nameTableY << 11) | (nameTableX << 10) | (coarseY << 5) | coarseX }
         set {
             coarseX = newValue & 0x1F // Bits 4-0
             coarseY = (newValue >> 5) & 0x1F // Bits 9-5
             nameTableX = (newValue >> 10) & 0x1 // Bit 10
             nameTableY = (newValue >> 11) & 0x1 // Bit 11
-            fineY = (newValue >> 12) & 0x7 // Bits 14-12
+            _fineY = (newValue >> 12) & 0x7 // Bits 14-12
         }
     }
 
@@ -119,9 +119,9 @@ public struct VramRegister {
     ///
     /// Formula: (nameTableY * 256) + (coarseY * 8) + fineY
     public var scrollY: Int {
-        get { (nameTableY << 8) | (coarseY << 3) | fineY }
+        get { (nameTableY << 8) | (coarseY << 3) | _fineY }
         set {
-            fineY = newValue & 7 // Last 3 bits: fine Y (0-7)
+            _fineY = newValue & 7 // Last 3 bits: fine Y (0-7)
             coarseY = (newValue >> 3) & 0x1F // Next 5 bits: coarse Y (0-29)
             nameTableY = (newValue >> 8) & 0x1 // Bit 8: nametable Y select
         }
@@ -152,7 +152,7 @@ public struct VramRegister {
     ) {
         self.a12Toggled = a12Toggled
         self.fineX = fineX
-        self.fineY = fineY
+        _fineY = fineY
         self.coarseX = coarseX
         self.coarseY = coarseY
         self.nameTableX = nameTableX
@@ -191,7 +191,7 @@ public struct VramRegister {
             coarseX = value >> 3 // Bits 7-3: coarse X (0-31)
         } else {
             // Second write: vertical scroll
-            fineY = value & 0x7 // Bits 2-0: fine Y (0-7)
+            _fineY = value & 0x7 // Bits 2-0: fine Y (0-7)
             coarseY = value >> 3 // Bits 7-3: coarse Y (0-29)
         }
     }
