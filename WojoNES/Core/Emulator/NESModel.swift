@@ -74,29 +74,29 @@ struct NESModel {
     /// Ratio of PPU clock to CPU clock. This value is used to synchronise
     /// rendering cycles with CPU execution (three PPU cycles per CPU cycle
     /// for standard NES timing, adjusted for PAL where necessary).
-    public var ppuClockRatio: Float
+    var ppuClockRatio: Float
 
     /// Maximum X coordinate for the PPU scanline (fixed for NES raster timings).
-    public let ppuMaxX: Int = 339
+    let ppuMaxX: Int = 339
 
     /// Maximum Y coordinate (number of scanlines) for the PPU; varies by region.
-    public var ppuMaxY: Int
+    var ppuMaxY: Int
 
     /// CPU frequency in Hertz for the chosen TV system.
-    public var cpuFrequency: Int
+    var cpuFrequency: Int
 
     /// Cumulative cycle counts for APU frame sequence steps. These are used to
     /// advance APU state at the correct moments during the frame (frame timing
     /// sequence behaviour is hardware-specific).
-    public var apuFrameCycles: [Int]
+    var apuFrameCycles: [Int]
 
     /// DMC sample periods (timer values) for the DMC channel; index maps to
     /// period values as defined by the hardware.
-    public var dmcPeriods: [Int]
+    var dmcPeriods: [Int]
 
     /// Noise channel period table; these values determine the noise channel's
     /// frequency behaviour for different settings.
-    public var noisePeriods: [Int]
+    var noisePeriods: [Int]
 
     // MARK: Lifecycle
 

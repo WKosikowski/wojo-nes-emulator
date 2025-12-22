@@ -50,7 +50,7 @@ class NESPPU: PPU {
 
     // MARK: Lifecycle
 
-    public init(nesModel: NESModel) {
+    init(nesModel: NESModel) {
         maxX = nesModel.ppuMaxX
         maxY = nesModel.ppuMaxY
 

@@ -21,23 +21,23 @@ struct PPUStatusRegister {
     /// Sprite Overflow flag (bit 5)
     /// Set when more than 8 sprites are present on the current scanline.
     /// This is used for sprite flickering detection in games.
-    public var spriteOverflow: Bool = false
+    var spriteOverflow: Bool = false
 
     /// Sprite 0 Hit flag (bit 6)
     /// Set when a non-zero pixel of sprite 0 overlaps with a non-transparent pixel
     /// of the background. Used by games to detect background collisions and timing.
-    public var spriteZeroHit: Bool = false
+    var spriteZeroHit: Bool = false
 
     /// Vertical Blank (V-Blank) flag (bit 7)
     /// Set during the vertical blanking interval when the PPU is not rendering.
     /// Cleared after a frame is rendered. Signals CPU that it's safe to update
     /// PPU registers and VRAM without causing visual glitches.
-    public var verticalBlank: Bool = false
+    var verticalBlank: Bool = false
 
     // MARK: Computed Properties
 
     /// Converts individual flag booleans to their packed register byte value.
-    public var value: Int {
+    var value: Int {
         get {
             var result = 0
             // Bits 0-4 are open bus (not stored in this register)
