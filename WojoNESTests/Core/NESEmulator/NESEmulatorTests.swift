@@ -17,10 +17,11 @@ struct NESEmulatorTests {
         let cpu = MockCPU()
         let apu = MockAPU()
         let ppu = MockPPU()
+
         let cartridge = MockCartridge()
 
         // Act
-        let emulator = NESEmulator(bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
+        let emulator = NESEmulator(model: .pal, bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
 
         // Assert
         #expect(emulator.bus === bus, "Bus should be set correctly")
@@ -40,7 +41,7 @@ struct NESEmulatorTests {
         let cartridge = MockCartridge()
 
         // Act
-        let emulator = NESEmulator(bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
+        let emulator = NESEmulator(model: .pal, bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
 
         // Assert
         #expect(bus.connectedComponents.count == 4, "Bus should have 4 connected components")
@@ -60,7 +61,7 @@ struct NESEmulatorTests {
         let cartridge = MockCartridge()
 
         // Act
-        let emulator = NESEmulator(bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
+        let emulator = NESEmulator(model: .pal, bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
 
         // Assert
         #expect(cpu.connectedBus === bus, "CPU should be connected to bus")
@@ -71,7 +72,7 @@ struct NESEmulatorTests {
     @Test("Connect cartridge updates cartridge property")
     func connectCartridge() {
         // Arrange
-        let emulator = NESEmulator(cartridge: MockCartridge())
+        let emulator = NESEmulator(model: .pal, cartridge: MockCartridge())
         let newCartridge = MockCartridge()
 
         // Act
@@ -84,7 +85,7 @@ struct NESEmulatorTests {
     @Test("Default initializer uses correct component types")
     func defaultInitializer() {
         // Act
-        let emulator = NESEmulator(cartridge: MockCartridge())
+        let emulator = NESEmulator(model: .pal, cartridge: MockCartridge())
 
         // Assert
         #expect(emulator.bus is NESBus, "Default bus should be NESBus")

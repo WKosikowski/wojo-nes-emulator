@@ -176,12 +176,12 @@ struct ControlRegisterTests {
         control.value = 0x5A // 01011010
         #expect(control.nameTableX == 0) // bit 0: 0
         #expect(control.nameTableY == 1) // bit 1: 1
-        #expect(control.increment == 32) // bit 2: 1
+        #expect(control.increment == 1) // bit 2: 1
         #expect(control.patternSprite == 1) // bit 3: 1
-        #expect(control.patternBg == 0) // bit 4: 0
-        #expect(control.spriteSize == 16) // bit 5: 1
-        #expect(control.slaveMode == false) // bit 6: 0
-        #expect(control.enableNMI == true) // bit 7: 1
+        #expect(control.patternBg == 1) // bit 4: 0
+        #expect(control.spriteSize == 8) // bit 5: 1
+        #expect(control.slaveMode == true) // bit 6: 0
+        #expect(control.enableNMI == false) // bit 7: 1
     }
 
     @Test("Round-trip: set fields then read register")

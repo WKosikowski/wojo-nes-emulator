@@ -17,7 +17,7 @@ class NESEmulator: Emulator {
 
     // MARK: Lifecycle
 
-    convenience init(model: NESModel, cartridge: NESCartridge) {
+    convenience init(model: NESModel, cartridge: Cartridge) {
         let ppu = NESPPU(nesModel: model)
         self.init(model: model, bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge)
     }
