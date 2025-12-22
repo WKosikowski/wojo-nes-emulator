@@ -15,7 +15,7 @@ class NESPPU: PPU {
     var frameBuffer: [UInt32] = []
 
     var x: Int = 0
-    var y: Int = -1
+    var y: Int = -1 // set to -1 to force pre-render tile fetch - see frameStep()
 
     var currentRenderingVramRegister: VramRegister = .init()
     var nextRenderingVramRegister: VramRegister = .init()
@@ -75,7 +75,9 @@ class NESPPU: PPU {
         false
     }
 
-    func step() {}
+    func step() {
+        frameStep()
+    }
 
     func read(_ address: UInt16) -> UInt8 {
         0
@@ -162,7 +164,7 @@ class NESPPU: PPU {
             case (-1, 256):
                 if renderEnabled {
                     // Restore the working VRAM register from the latched temporary register.
-                    // This is the key step that applies scroll changes from $2005 writes.
+                    // This is the step that applies scroll changes from $2005 writes.
                     currentRenderingVramRegister = nextRenderingVramRegister
                     readSpriteLines()
                 }
