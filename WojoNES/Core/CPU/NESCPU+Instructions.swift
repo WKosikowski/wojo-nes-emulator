@@ -16,7 +16,7 @@ public extension NESCPU {
         result += (statusRegister.carry == true) ? 1 : 0
         statusRegister.carry = result > 0xFF
         statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
-        accumulator = UInt8(result)
+        accumulator = UInt8(result & 0xFF)
     }
 
     /// Subtract memory from accumulator with borrow
@@ -33,36 +33,36 @@ public extension NESCPU {
 
     /// Increment memory
     func inc() {
-        let value = read(address) + 1
+        let value = read(address) &+ 1
         write(address, value)
         resultRegister = value // to set zero and negative flags
     }
 
     /// Decrement memory
     func dec() {
-        let value = read(address) - 1
+        let value = read(address) &- 1
         write(address, value)
         resultRegister = value // to set zero and negative flags
     }
 
     /// Increment X register
     func inx() {
-        xRegister += 1
+        xRegister &+= 1
     }
 
     /// Increment Y register
     func iny() {
-        yRegister += 1
+        yRegister &+= 1
     }
 
     /// Decrement X register
     func dex() {
-        xRegister -= 1
+        xRegister &-= 1
     }
 
     /// Decrement Y register
     func dey() {
-        yRegister -= 1
+        yRegister &-= 1
     }
 
     // MARK: - Logical Instructions
@@ -189,7 +189,7 @@ public extension NESCPU {
     func jsr() {
         programCounter -= 1
         let highByte = UInt8(programCounter >> 8)
-        let lowByte = UInt8(programCounter)
+        let lowByte = UInt8(programCounter & 0b1111_1111)
         pushToStack(highByte)
         pushToStack(lowByte)
         programCounter = address
@@ -272,7 +272,7 @@ public extension NESCPU {
     /// Force break
     func brk() {
         let pcHigh = UInt8(programCounter >> 8)
-        let pcLow = UInt8(programCounter)
+        let pcLow = UInt8(programCounter & 0b1111_1111)
         pushToStack(pcHigh)
         pushToStack(pcLow)
         var sr = statusRegister
@@ -502,9 +502,9 @@ public extension NESCPU {
     /// Increments memory, then subtracts from A.
     /// Syntax: M += 1, then A = A - M - (1 - C)
     func isc() {
-        let val = read(address) + 1
+        let val = read(address) &+ 1
         write(address, val)
-        accumulator = accumulator - val - (1 - (statusRegister.carry ? 1 : 0))
+        accumulator = accumulator &- val &- (1 &- (statusRegister.carry ? 1 : 0))
     }
 
     /// alr – AND + LSR
