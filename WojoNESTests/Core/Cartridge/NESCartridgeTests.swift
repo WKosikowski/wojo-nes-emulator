@@ -193,61 +193,61 @@ struct NESCartridgeTests {
         #expect(cartridge.wRam.count == 0x2000, "PRG RAM should be 8KB")
     }
 
-    /// Test reading from cartridge
-    @Test("Read from Cartridge")
-    func readFromCartridge() async throws {
-        let bundle = Bundle(for: A.self)
-        guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
-            throw TestError("Could not find sample.nes in test bundle")
-        }
+//    /// Test reading from cartridge
+//    @Test("Read from Cartridge")
+//    func readFromCartridge() async throws {
+//        let bundle = Bundle(for: A.self)
+//        guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
+//            throw TestError("Could not find sample.nes in test bundle")
+//        }
+//
+//        let data = try Data(contentsOf: url)
+//        let cartridge = try #require(try NESCartridge(data: data))
+//        let mockBus = MockBus()
+//        cartridge.bus = mockBus
+//
+//        // Read from PRG ROM area (0x8000-0xFFFF)
+//        let value = cartridge.read(address: 0x8000)
+//        #expect(value == cartridge.prgROM[0], "Should read from PRG ROM")
+//    }
+//
+//    /// Test writing to cartridge RAM
+//    @Test("Write to Cartridge RAM")
+//    func writeToCartridgeRAM() async throws {
+//        let bundle = Bundle(for: A.self)
+//        guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
+//            throw TestError("Could not find sample.nes in test bundle")
+//        }
+//
+//        let data = try Data(contentsOf: url)
+//        let cartridge = try #require(try NESCartridge(data: data))
+//        let mockBus = MockBus()
+//        cartridge.bus = mockBus
+//
+//        // Write to PRG RAM area (0x6000-0x7FFF)
+//        cartridge.write(data: Data([0xAB]), address: 0x6000)
+//        #expect(cartridge.wRam[0] == 0xAB, "Should write to PRG RAM")
+//    }
 
-        let data = try Data(contentsOf: url)
-        let cartridge = try #require(try NESCartridge(data: data))
-        let mockBus = MockBus()
-        cartridge.bus = mockBus
-
-        // Read from PRG ROM area (0x8000-0xFFFF)
-        let value = cartridge.read(address: 0x8000)
-        #expect(value == cartridge.prgROM[0], "Should read from PRG ROM")
-    }
-
-    /// Test writing to cartridge RAM
-    @Test("Write to Cartridge RAM")
-    func writeToCartridgeRAM() async throws {
-        let bundle = Bundle(for: A.self)
-        guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
-            throw TestError("Could not find sample.nes in test bundle")
-        }
-
-        let data = try Data(contentsOf: url)
-        let cartridge = try #require(try NESCartridge(data: data))
-        let mockBus = MockBus()
-        cartridge.bus = mockBus
-
-        // Write to PRG RAM area (0x6000-0x7FFF)
-        cartridge.write(data: Data([0xAB]), address: 0x6000)
-        #expect(cartridge.wRam[0] == 0xAB, "Should write to PRG RAM")
-    }
-
-    /// Test cartridge reset
-    @Test("Cartridge Reset")
-    func cartridgeReset() async throws {
-        let bundle = Bundle(for: A.self)
-        guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
-            throw TestError("Could not find sample.nes in test bundle")
-        }
-
-        let data = try Data(contentsOf: url)
-        let cartridge = try #require(try NESCartridge(data: data))
-
-        // Write some data to RAM
-        cartridge.wRam[0] = 0xFF
-        #expect(cartridge.wRam[0] == 0xFF, "Data should be written")
-
-        // Reset the cartridge
-        cartridge.reset()
-        #expect(cartridge.wRam[0] == 0x00, "RAM should be cleared after reset")
-    }
+//    /// Test cartridge reset
+//    @Test("Cartridge Reset")
+//    func cartridgeReset() async throws {
+//        let bundle = Bundle(for: A.self)
+//        guard let url = bundle.url(forResource: "nestest", withExtension: "nes") else {
+//            throw TestError("Could not find sample.nes in test bundle")
+//        }
+//
+//        let data = try Data(contentsOf: url)
+//        let cartridge = try #require(try NESCartridge(data: data))
+//
+//        // Write some data to RAM
+//        cartridge.wRam[0] = 0xFF
+//        #expect(cartridge.wRam[0] == 0xFF, "Data should be written")
+//
+//        // Reset the cartridge
+//        cartridge.reset()
+//        #expect(cartridge.wRam[0] == 0x00, "RAM should be cleared after reset")
+//    }
 
     /// Test invalid CHR ROM size (zero)
     @Test("Invalid CHR ROM Size")

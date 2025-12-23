@@ -152,17 +152,6 @@ class NESCartridge: Cartridge {
         bus?.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
-    func write(data: Data, address: Int) {
-        assertionFailure("not implemented")
-    }
-
-    func read(address: Int) -> UInt8 {
-        switch address {
-            default:
-                prgROM[address]
-        }
-    }
-
     func getModel() -> NESModel {
         switch tvSystem {
             case .pal:

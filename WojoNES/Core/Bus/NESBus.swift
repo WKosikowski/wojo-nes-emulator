@@ -25,7 +25,7 @@ class NESBus: Bus {
             case 0 ..< 0x2000:
                 return ram[address & 0x7FF]
             case 0x8000...:
-                return cartridge.read(address: address & 0x1FFF)
+                return 0 // cartridge.read(address: address & 0x1FFF)
             default:
                 return ram[address]
                 print(" !!!!!!!!!!!!!!    Not implemented  !!!!!!!!!!!!!!!! ")

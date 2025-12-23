@@ -23,7 +23,7 @@ public class Mapper {
     public var prgRAMenabled: Bool = true
     public var chrRAMenabled: Bool = false
 
-    weak var cartridge: NESCartridge?
+    weak var cartridge: Cartridge?
 
     private var mirroringValue: Int = 0
 

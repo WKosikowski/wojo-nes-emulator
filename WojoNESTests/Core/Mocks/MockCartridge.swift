@@ -14,6 +14,8 @@ class MockCartridge: Cartridge {
 
     var chrMemory = BankMemory()
 
+    var prgMemory = BankMemory()
+
     var tvSystem: TVSystem = .ntsc
 
     /// Track nametable swaps for testing

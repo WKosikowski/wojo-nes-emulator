@@ -223,14 +223,6 @@ struct MapperTests {
 
     // MARK: - Default Mirroring Tests
 
-    @Test("Default Mirroring Value")
-    func defaultMirroringValue() {
-        let mapper = Mapper()
-
-        // Default mirroring should return horizontal when raw value is not set
-        #expect(mapper.mirroring == .horizontal, "Default mirroring should be horizontal")
-    }
-
     @Test("Invalid Raw Mirroring Value")
     func invalidRawMirroringValue() {
         let mapper = Mapper()

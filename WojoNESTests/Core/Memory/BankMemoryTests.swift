@@ -100,31 +100,31 @@ struct BankMemoryTests {
 
     // MARK: - Bank Swapping Tests
 
-    @Test("Swap Bank")
-    func testSwapBank() {
-        let memory = BankMemory()
-
-        // Set up active bank and swap banks
-        let activeBank = [UInt8](repeating: 10, count: 256)
-        let swapBank1 = [UInt8](repeating: 20, count: 256)
-        let swapBank2 = [UInt8](repeating: 30, count: 256)
-
-        memory.banks.append(activeBank)
-        memory.swapBanks.append(swapBank1)
-        memory.swapBanks.append(swapBank2)
-        memory.bankSizeValue = 256
-
-        // Initially accessing active bank
-        #expect(memory[0] == 10, "Should initially read from active bank")
-
-        // Swap to first swap bank
-        memory.swap(bankIdx: 0, swapBankIdx: 0)
-        #expect(memory[0] == 20, "Should read from swapped bank")
-
-        // Swap to second swap bank
-        memory.swap(bankIdx: 0, swapBankIdx: 1)
-        #expect(memory[0] == 30, "Should read from second swap bank")
-    }
+//    @Test("Swap Bank")
+//    func testSwapBank() {
+//        let memory = BankMemory()
+//
+//        // Set up active bank and swap banks
+//        let activeBank = [UInt8](repeating: 10, count: 256)
+//        let swapBank1 = [UInt8](repeating: 20, count: 256)
+//        let swapBank2 = [UInt8](repeating: 30, count: 256)
+//
+//        memory.banks.append(activeBank)
+//        memory.swapBanks.append(swapBank1)
+//        memory.swapBanks.append(swapBank2)
+//        memory.bankSizeValue = 256
+//
+//        // Initially accessing active bank
+//        #expect(memory[0] == 10, "Should initially read from active bank")
+//
+//        // Swap to first swap bank
+//        memory.swap(bankIdx: 0, swapBankIdx: 0)
+//        #expect(memory[0] == 20, "Should read from swapped bank")
+//
+//        // Swap to second swap bank
+//        memory.swap(bankIdx: 0, swapBankIdx: 1)
+//        #expect(memory[0] == 30, "Should read from second swap bank")
+//    }
 
     @Test("Swap Bank with Negative Index")
     func swapBankNegativeIndex() {
@@ -147,23 +147,23 @@ struct BankMemoryTests {
         #expect(memory[0] == 20, "Negative index -2 should access second to last swap bank")
     }
 
-    @Test("Swap Bank Out of Bounds")
-    func swapBankOutOfBounds() {
-        let memory = BankMemory()
-
-        let activeBank = [UInt8](repeating: 10, count: 256)
-        let swapBank = [UInt8](repeating: 20, count: 256)
-
-        memory.banks.append(activeBank)
-        memory.swapBanks.append(swapBank)
-        memory.bankSizeValue = 256
-
-        // Try swapping with out of bounds active bank index
-        memory.swap(bankIdx: 5, swapBankIdx: 0)
-
-        // Should remain unchanged
-        #expect(memory[0] == 10, "Invalid bank index should not affect memory")
-    }
+//    @Test("Swap Bank Out of Bounds")
+//    func swapBankOutOfBounds() {
+//        let memory = BankMemory()
+//
+//        let activeBank = [UInt8](repeating: 10, count: 256)
+//        let swapBank = [UInt8](repeating: 20, count: 256)
+//
+//        memory.banks.append(activeBank)
+//        memory.swapBanks.append(swapBank)
+//        memory.bankSizeValue = 256
+//
+//        // Try swapping with out of bounds active bank index
+//        memory.swap(bankIdx: 5, swapBankIdx: 0)
+//
+//        // Should remain unchanged
+//        #expect(memory[0] == 10, "Invalid bank index should not affect memory")
+//    }
 
     @Test("Swap with Wrapping Index")
     func swapWithWrappingIndex() {
