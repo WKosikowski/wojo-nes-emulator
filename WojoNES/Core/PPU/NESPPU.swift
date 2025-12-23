@@ -175,9 +175,9 @@ class NESPPU: PPU {
     /// Implements the PPU read protocol with proper timing and side-effects for each register.
     /// - Parameter address: The PPU register address (0x2000-0x2007).
     /// - Returns: The data read from the register, or the last value on the bus if unavailable.
-    func read(_ address: UInt16) -> UInt8 {
+    func read(_ address: Int) -> UInt8 {
         var data = lastBusData
-        switch address {
+        switch address & 0x7 {
             case 2: // PPU Status Register (0x2002)
                 // Combine the status flags (bits 7-5) with the last bus data
                 data |= UInt8(statusRegister.value & 0xE0)
@@ -235,7 +235,7 @@ class NESPPU: PPU {
     /// - Parameters:
     ///   - address: The PPU register address (0x2000-0x2007).
     ///   - value: The data to write to the register.
-    func write(address: UInt16, value: UInt8) {
+    func write(address: Int, value: UInt8) {
         lastBusData = value
         switch address & 0x7 {
             case 0: // PPU Control Register (0x2000)

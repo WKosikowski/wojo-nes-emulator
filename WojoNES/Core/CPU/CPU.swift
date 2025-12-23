@@ -9,6 +9,8 @@ protocol CPU: AnyObject {
     func step()
     func handleIRQ()
     func handleNMI()
+    func setDmaOam(enable: Bool)
 
     func connect(_ bus: Bus)
+    var enabled: Bool { get }
 }

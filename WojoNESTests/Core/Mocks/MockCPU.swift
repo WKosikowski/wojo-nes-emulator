@@ -11,6 +11,8 @@ class MockCPU: CPU {
 
     var connectedBus: Bus?
 
+    var enabled: Bool = false
+
     // MARK: Functions
 
     func step() {}
@@ -20,4 +22,6 @@ class MockCPU: CPU {
     func handleNMI() {}
 
     func connect(_ bus: any Bus) { connectedBus = bus }
+
+    func setDmaOam(enable: Bool) {}
 }

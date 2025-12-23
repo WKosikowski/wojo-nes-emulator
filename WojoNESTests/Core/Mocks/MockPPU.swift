@@ -22,23 +22,21 @@ class MockPPU: PPU {
 
     var connectedBus: Bus?
 
+    var frameComplete: Bool = false
+
     // MARK: Functions
 
     func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
         nameTables.swap(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
-    func frameReady() -> Bool {
-        false
-    }
-
     func step() {}
 
-    func read(_ address: UInt16) -> UInt8 {
+    func read(_ address: Int) -> UInt8 {
         0
     }
 
-    func write(address: UInt16, value: UInt8) {}
+    func write(address: Int, value: UInt8) {}
 
     func connect(_ bus: any Bus) { connectedBus = bus }
 }

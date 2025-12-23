@@ -8,15 +8,21 @@
 class NESAPU: APU {
     // MARK: Properties
 
+    var status: UInt8
+
     var bus: Bus!
 
     // MARK: Lifecycle
 
-    init() {}
+    init() {
+        status = 0
+    }
 
     // MARK: Functions
 
     func connect(_ bus: Bus) {
         self.bus = bus
     }
+
+    func write(address: Int, value: UInt8) {}
 }

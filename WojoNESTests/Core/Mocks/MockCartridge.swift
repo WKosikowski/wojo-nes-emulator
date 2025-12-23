@@ -18,6 +18,8 @@ class MockCartridge: Cartridge {
 
     var tvSystem: TVSystem = .ntsc
 
+    var wRam = [UInt8](repeating: 0, count: 0x2000)
+
     /// Track nametable swaps for testing
     var nameTableSwaps: [(bankIdx: Int, swapBankIdx: Int)] = []
 
