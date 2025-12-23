@@ -12,13 +12,21 @@ class MockBus: Bus {
 
     var connectedComponents: [Any] = []
 
+    var ram: [Int: UInt8] = [:]
+
     // MARK: Functions
 
     func read(address: Int) -> UInt8 {
-        1
+        if let data = ram[address] {
+            return data
+        } else {
+            fatalError("nothing was written to memory at  \(String(format: "%02x", 12))")
+        }
     }
 
-    func write(address: Int, data: UInt8) {}
+    func write(address: Int, data: UInt8) {
+        ram[address] = data
+    }
 
     func connect(_ component: any APU) { connectedComponents.append(component) }
     func connect(_ component: any PPU) { connectedComponents.append(component) }

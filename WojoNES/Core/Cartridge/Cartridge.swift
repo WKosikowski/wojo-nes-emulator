@@ -7,9 +7,9 @@
 import Foundation
 
 protocol Cartridge: AnyObject {
-    func write(data: Data, address: UInt16)
-    func read(address: UInt16) -> UInt8
     func getModel() -> NESModel
+    func write(data: Data, address: Int)
+    func read(address: Int) -> UInt8
     func reset()
 
     var mapper: Mapper { get }

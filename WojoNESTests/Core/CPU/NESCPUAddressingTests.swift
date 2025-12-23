@@ -9,33 +9,57 @@ import Testing
 
 @Suite("NESCPU Addressing Modes")
 struct NESCPUAddressingTests {
-//    @Test("Immediate Addressing Mode")
-//    func testImmediate() throws {
-//        let cpu = NESCPU()
-//        cpu.programCounter = 0x1234
-//        cpu.imm()
-//        #expect(cpu.address == 0x1234)
-//    }
+    @Test("Immediate Addressing Mode")
+    func immediate() throws {
+        let cpu = NESCPU()
+        cpu.programCounter = 0x1234
+        cpu.imm()
+        #expect(cpu.address == 0x1234)
+    }
 
     @Test("Zero Page Addressing Mode")
     func zeroPage() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
-        bus.memory[0x2000] = 0x42
-        cpu.programCounter = 0x2000
+        bus.write(address: 0x1000, data: 0x42)
+        cpu.programCounter = 0x1000
         cpu.zpg()
         #expect(cpu.address == 0x42)
-        #expect(cpu.programCounter == 0x2001)
+        #expect(cpu.programCounter == 0x1001)
+    }
+
+    @Test("Zero Page Addressing: wrap programCounter at 0xFFFF")
+    func zeroPageProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        bus.write(address: 0xFFFF, data: 0x05)
+        cpu.programCounter = 0xFFFF
+        cpu.zpg()
+        #expect(cpu.address == 0x05)
+        #expect(cpu.programCounter == 0x0000)
+    }
+
+    @Test("Zero Page,X Addressing wraps at 0xFF")
+    func zeroPageXWraps() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0xFF
+        bus.write(address: 0x1000, data: 0x80)
+        cpu.programCounter = 0x1000
+        cpu.zpx()
+        #expect(cpu.address == (0x80 + 0xFF) & 0xFF)
     }
 
     @Test("Zero Page,X Addressing Mode Wraps Around")
     func zeroPageX() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
         cpu.xRegister = 0x10
-        bus.memory[0x1000] = 0xF5
+        bus.write(address: 0x1000, data: 0xF5)
         cpu.programCounter = 0x1000
         cpu.zpx()
         #expect(cpu.address == (0xF5 + 0x10) & 0xFF)
@@ -44,32 +68,54 @@ struct NESCPUAddressingTests {
     @Test("Relative Addressing Forward Branch")
     func relativeForward() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
-        bus.memory[0x3000] = 0x06
-        cpu.programCounter = 0x3000
+        bus.write(address: 0x1000, data: 0x06)
+        cpu.programCounter = 0x1000
         cpu.rel()
-        #expect(cpu.address == 0x3001 + 6)
+        #expect(cpu.address == 0x1001 + 6)
+    }
+
+    @Test("Relative Branch: max forward (+127)")
+    func relativeForwardMax() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        bus.write(address: 0x2000, data: 0x7F) // +127
+        cpu.programCounter = 0x2000
+        cpu.rel()
+        #expect(cpu.address == 0x2001 + 127)
     }
 
     @Test("Relative Addressing Backward Branch")
     func relativeBackward() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
-        bus.memory[0x3000] = 0xFA // -6
-        cpu.programCounter = 0x3000
+        bus.write(address: 0x1000, data: 0xFA) // -6
+        cpu.programCounter = 0x1000
         cpu.rel()
-        #expect(cpu.address == 0x3001 - 6)
+        #expect(cpu.address == 0x1001 - 6)
+    }
+
+    @Test("Relative Branch: max backward (-128)")
+    func relativeBackwardMax() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        bus.write(address: 0x2000, data: 0x80) // -128 (0x80 in 2's comp)
+        cpu.programCounter = 0x2000
+        cpu.rel()
+        #expect(cpu.address == 0x2001 - 128)
     }
 
     @Test("Absolute Addressing")
     func absolute() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
-        bus.memory[0x1000] = 0x34
-        bus.memory[0x1001] = 0x12
+        bus.write(address: 0x1000, data: 0x34)
+        bus.write(address: 0x1001, data: 0x12)
         cpu.programCounter = 0x1000
         cpu.abs()
         #expect(cpu.address == 0x1234)
@@ -78,12 +124,12 @@ struct NESCPUAddressingTests {
     @Test("Indirect,Y Addressing")
     func indirectY() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
         cpu.yRegister = 0x04
-        bus.memory[0x1000] = 0x10
-        bus.memory[0x10] = 0x78
-        bus.memory[0x11] = 0x56
+        bus.write(address: 0x1000, data: 0x10)
+        bus.write(address: 0x10, data: 0x78)
+        bus.write(address: 0x11, data: 0x56)
         cpu.programCounter = 0x1000
         cpu.idy()
         #expect(cpu.address == 0x5678 + 0x04)
@@ -92,11 +138,11 @@ struct NESCPUAddressingTests {
     @Test("Absolute,X Addressing Mode")
     func absoluteX() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
         cpu.xRegister = 0x01
-        bus.memory[0x1000] = 0x00
-        bus.memory[0x1001] = 0x20
+        bus.write(address: 0x1000, data: 0x00)
+        bus.write(address: 0x1001, data: 0x20)
         cpu.programCounter = 0x1000
         cpu.abx()
         #expect(cpu.address == 0x2000 + 0x01)
@@ -105,12 +151,12 @@ struct NESCPUAddressingTests {
     @Test("Absolute,Y Addressing Mode")
     func absoluteY() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
         cpu.yRegister = 0x05
-        bus.memory[0x1000] = 0x10
-        bus.memory[0x1001] = 0x30
-        cpu.programCounter = 0x1000
+        bus.write(address: 0x0800, data: 0x10)
+        bus.write(address: 0x0801, data: 0x30)
+        cpu.programCounter = 0x0800
         cpu.aby()
         #expect(cpu.address == 0x3010 + 0x05)
     }
@@ -118,28 +164,258 @@ struct NESCPUAddressingTests {
     @Test("Indexed Indirect (Indirect,X) Addressing Mode")
     func indexedIndirect() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
         cpu.xRegister = 0x04
-        bus.memory[0x1000] = 0x10
-        bus.memory[0x14] = 0x78
-        bus.memory[0x15] = 0x56
+        bus.write(address: 0x1000, data: 0x10)
+        bus.write(address: 0x14, data: 0x78)
+        bus.write(address: 0x15, data: 0x56)
         cpu.programCounter = 0x1000
         cpu.idx()
         #expect(cpu.address == 0x5678)
     }
 
+    @Test("Indexed Indirect (Indirect,X) Mode: pointer wrap at 0xFF")
+    func indexedIndirectPointerWraps() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x01
+        // Pointer will be (0xFF + 1) & 0xFF == 0x00
+        bus.write(address: 0x1000, data: 0xFF)
+        bus.write(address: 0x00, data: 0x34) // low byte at 0x00
+        bus.write(address: 0x01, data: 0x12) // high byte at 0x01 (correct wraparound)
+        cpu.programCounter = 0x1000
+        cpu.idx()
+        #expect(cpu.address == 0x1234)
+    }
+
+    @Test("Indexed Indirect (Indirect,X) Mode: pointer base at 0x00, xRegister=0")
+    func indexedIndirectPointerAtZero() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x00
+        bus.write(address: 0x1000, data: 0x10)
+        bus.write(address: 0x10, data: 0xAB)
+        bus.write(address: 0x11, data: 0xCD)
+        cpu.programCounter = 0x1000
+        cpu.idx()
+        #expect(cpu.address == 0xCDAB)
+    }
+
+    @Test("Indexed Indirect (Indirect,X) Mode: pointer at 0xFE, X=1 (wrap pointer)")
+    func indexedIndirectPointerNearEndWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x01
+        bus.write(address: 0x1000, data: 0xFE)
+        bus.write(address: 0xFF, data: 0xEE) // low byte
+        bus.write(address: 0x00, data: 0xDD) // high byte (wraps)
+        cpu.programCounter = 0x1000
+        cpu.idx()
+        #expect(cpu.address == 0xDDEE)
+    }
+
+    @Test("Indexed Indirect (Indirect,X) Mode: pointer at 0xFF, X=0 (high byte from 0x00)")
+    func indexedIndirectPointerAtFF() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x00
+        bus.write(address: 0x1000, data: 0xFF)
+        bus.write(address: 0xFF, data: 0x01)
+        bus.write(address: 0x00, data: 0x02) // wrap-around high
+        cpu.programCounter = 0x1000
+        cpu.idx()
+        #expect(cpu.address == 0x0201)
+    }
+
     @Test("Indirect Indexed (Indirect),Y Addressing Mode")
     func indirectIndexed() throws {
         let cpu = NESCPU()
-        let bus = NESBus()
+        let bus = MockBus()
         cpu.connect(bus)
         cpu.yRegister = 0x02
-        bus.memory[0x1000] = 0x20
-        bus.memory[0x20] = 0x00
-        bus.memory[0x21] = 0x40
+        bus.write(address: 0x1000, data: 0x20)
+        bus.write(address: 0x20, data: 0x00)
+        bus.write(address: 0x21, data: 0x40)
         cpu.programCounter = 0x1000
         cpu.idy()
         #expect(cpu.address == 0x4000 + 0x02)
+    }
+
+    @Test("Absolute,X Addressing Mode - Page Crossing")
+    func absoluteXPageCrossing() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x01
+        // Base address is 0x20FF, adding 0x01 crosses to 0x2100
+        bus.write(address: 0x1000, data: 0xFF) // low byte
+        bus.write(address: 0x1001, data: 0x20) // high byte
+        cpu.programCounter = 0x1000
+        cpu.abx()
+        #expect(cpu.address == 0x2100)
+    }
+
+    @Test("Absolute,Y Addressing Mode - Page Crossing")
+    func absoluteYPageCrossing() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.yRegister = 0x10
+        // Base address is 0x30FD, adding 0x10 crosses to 0x310D
+        bus.write(address: 0x0800, data: 0xFD) // low byte
+        bus.write(address: 0x0801, data: 0x30) // high byte
+        cpu.programCounter = 0x0800
+        cpu.aby()
+        #expect(cpu.address == 0x310D)
+    }
+
+    @Test("Indirect Indexed (Indirect),Y Addressing - Page Crossing")
+    func indirectIndexedPageCrossing() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.yRegister = 0x10
+        // Pointer at 0x20: 0x00FD, adding Y crosses to 0x010D
+        bus.write(address: 0x1000, data: 0x20) // pointer addr
+        bus.write(address: 0x20, data: 0xFD) // low byte
+        bus.write(address: 0x21, data: 0x00) // high byte
+        cpu.programCounter = 0x1000
+        cpu.idy()
+        #expect(cpu.address == 0x010D)
+    }
+
+    @Test("Immediate Addressing Mode: programCounter wrap at 0xFFFF")
+    func immediateProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        cpu.programCounter = 0xFFFF
+        cpu.imm()
+        #expect(cpu.programCounter == 0x0000)
+        #expect(cpu.address == 0xFFFF)
+    }
+
+    @Test("Zero Page,X Addressing: programCounter wrap at 0xFFFF")
+    func zeroPageXProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x03
+        bus.write(address: 0xFFFF, data: 0x80)
+        cpu.programCounter = 0xFFFF
+        cpu.zpx()
+        #expect(cpu.address == (0x80 + 0x03) & 0xFF)
+        #expect(cpu.programCounter == 0x0000)
+    }
+
+    @Test("Zero Page,Y Addressing: programCounter wrap at 0xFFFF")
+    func zeroPageYProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.yRegister = 0x02
+        bus.write(address: 0xFFFF, data: 0x90)
+        cpu.programCounter = 0xFFFF
+        cpu.zpy()
+        #expect(cpu.address == (0x90 + 0x02) & 0xFF)
+        #expect(cpu.programCounter == 0x0000)
+    }
+
+    @Test("Relative Addressing: programCounter wrap at 0xFFFF")
+    func relativeProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        bus.write(address: 0xFFFF, data: 0x06)
+        cpu.programCounter = 0xFFFF
+        cpu.rel()
+        #expect(cpu.address == 0x0000 + 6)
+        #expect(cpu.programCounter == 0x0000)
+    }
+
+    @Test("Absolute Addressing: programCounter wrap at 0xFFFF/0x0000")
+    func absoluteProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        bus.write(address: 0xFFFF, data: 0x34) // low
+        bus.write(address: 0x0000, data: 0x12) // high
+        cpu.programCounter = 0xFFFF
+        cpu.abs()
+        #expect(cpu.address == 0x1234)
+        #expect(cpu.programCounter == 0x0001)
+    }
+
+    @Test("Absolute,X Addressing: programCounter wrap at 0xFFFF/0x0000")
+    func absoluteXProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x01
+        bus.write(address: 0xFFFF, data: 0xFE)
+        bus.write(address: 0x0000, data: 0x20)
+        cpu.programCounter = 0xFFFF
+        cpu.abx()
+        #expect(cpu.address == 0x20FE + 1)
+        #expect(cpu.programCounter == 0x0001)
+    }
+
+    @Test("Absolute,Y Addressing: programCounter wrap at 0xFFFF/0x0000")
+    func absoluteYProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.yRegister = 0x05
+        bus.write(address: 0xFFFF, data: 0xF0)
+        bus.write(address: 0x0000, data: 0x30)
+        cpu.programCounter = 0xFFFF
+        cpu.aby()
+        #expect(cpu.address == 0x30F0 + 5)
+        #expect(cpu.programCounter == 0x0001)
+    }
+
+    @Test("Indirect Addressing: programCounter wrap at 0xFFFF/0x0000")
+    func indirectProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        bus.write(address: 0xFFFF, data: 0x12) // low
+        bus.write(address: 0x0000, data: 0x34) // high
+        bus.write(address: 0x3412, data: 0x78)
+        bus.write(address: 0x3413, data: 0x56)
+        cpu.programCounter = 0xFFFF
+        cpu.idi()
+        #expect(cpu.programCounter == 0x0001)
+    }
+
+    @Test("Indirect,X Addressing: programCounter wrap at 0xFFFF")
+    func indirectXProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.xRegister = 0x04
+        bus.write(address: 0xFFFF, data: 0x10)
+        bus.write(address: 0x14, data: 0x78)
+        bus.write(address: 0x15, data: 0x56)
+        cpu.programCounter = 0xFFFF
+        cpu.idx()
+        #expect(cpu.programCounter == 0x0000)
+    }
+
+    @Test("Indirect,Y Addressing: programCounter wrap at 0xFFFF")
+    func indirectYProgramCounterWrap() throws {
+        let cpu = NESCPU()
+        let bus = MockBus()
+        cpu.connect(bus)
+        cpu.yRegister = 0x02
+        bus.write(address: 0xFFFF, data: 0x20)
+        bus.write(address: 0x20, data: 0x00)
+        bus.write(address: 0x21, data: 0x40)
+        cpu.programCounter = 0xFFFF
+        cpu.idy()
+        #expect(cpu.programCounter == 0x0000)
     }
 }
