@@ -17,18 +17,18 @@ class NESEmulator: Emulator {
 
     // MARK: Lifecycle
 
-    convenience init(model: NESModel, cartridge: Cartridge) {
+    convenience init(cartridge: Cartridge) {
         let ppu = NESPPU(cartridge: cartridge)
-        self.init(model: model, bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge)
+        self.init(bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge)
     }
 
-    init(model: NESModel, bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge) {
-        self.model = model
+    init(bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge) {
         self.bus = bus
         self.cpu = cpu
         self.apu = apu
         self.ppu = ppu
         self.cartridge = cartridge
+        model = cartridge.getModel()
 
         // connect all components
         bus.connect(apu)
