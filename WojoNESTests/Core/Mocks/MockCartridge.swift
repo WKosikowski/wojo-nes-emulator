@@ -10,15 +10,18 @@ import Foundation
 class MockCartridge: Cartridge {
     // MARK: Properties
 
-    var mapper = WojoNES.Mapper()
+    var mapper = Mapper()
 
-    var chrMemory = WojoNES.BankMemory()
+    var chrMemory = BankMemory()
 
     var tvSystem: TVSystem = .ntsc
 
+    /// Track nametable swaps for testing
+    var nameTableSwaps: [(bankIdx: Int, swapBankIdx: Int)] = []
+
     // MARK: Functions
 
-    func getModel() -> WojoNES.NESModel {
+    func getModel() -> NESModel {
         switch tvSystem {
             case .pal:
                 return .pal
@@ -34,4 +37,8 @@ class MockCartridge: Cartridge {
     }
 
     func reset() {}
+
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
+        nameTableSwaps.append((bankIdx: bankIdx, swapBankIdx: swapBankIdx))
+    }
 }

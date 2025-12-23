@@ -13,7 +13,7 @@ class MockPPU: PPU {
 
     var nameTables: BankMemory = {
         var memory = BankMemory()
-        // Initialize nametables (2KB VRAM with 1KB banks)
+        // Initialise nametables (2KB VRAM with 1KB banks)
         memory.banks.append(Array(repeating: 0, count: 0x1000))
         memory.swapBanks.append(Array(repeating: 0, count: 0x1000))
         memory.bankSizeValue = 0x400

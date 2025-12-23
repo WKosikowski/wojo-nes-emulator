@@ -143,7 +143,7 @@ struct VramRegisterTests {
         #expect(vram.fineY == 0b011)
     }
 
-    // MARK: - Latch-Based Behavior
+    // MARK: - Latch-Based Behaviour
 
     @Test
     func setAddress_firstWriteSetsHighByte() {

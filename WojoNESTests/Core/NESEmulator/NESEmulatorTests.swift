@@ -82,8 +82,8 @@ struct NESEmulatorTests {
         #expect(emulator.cartridge === newCartridge, "Cartridge should be updated to new cartridge")
     }
 
-    @Test("Default initializer uses correct component types")
-    func defaultInitializer() {
+    @Test("Default initialiser uses correct component types")
+    func defaultInitialiser() {
         // Act
         let emulator = NESEmulator(model: .pal, cartridge: MockCartridge())
 
