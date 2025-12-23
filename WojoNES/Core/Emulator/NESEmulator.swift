@@ -13,10 +13,17 @@ class NESEmulator: Emulator {
     let apu: APU
     let ppu: PPU
     var cartridge: Cartridge
+    let model: NESModel
 
     // MARK: Lifecycle
 
-    init(bus: Bus = NESBus(), cpu: CPU = NESCPU(), apu: APU = NESAPU(), ppu: PPU = NESPPU(), cartridge: Cartridge) {
+    convenience init(model: NESModel, cartridge: Cartridge) {
+        let ppu = NESPPU(cartridge: cartridge)
+        self.init(model: model, bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge)
+    }
+
+    init(model: NESModel, bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge) {
+        self.model = model
         self.bus = bus
         self.cpu = cpu
         self.apu = apu

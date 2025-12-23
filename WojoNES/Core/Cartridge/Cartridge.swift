@@ -7,7 +7,11 @@
 import Foundation
 
 protocol Cartridge: AnyObject {
-    func write(data: Data, address: Int)
-    func read(address: Int) -> UInt8
+    func getModel() -> NESModel
     func reset()
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int)
+
+    var mapper: Mapper { get }
+    var chrMemory: BankMemory { get }
+    var prgMemory: BankMemory { get }
 }

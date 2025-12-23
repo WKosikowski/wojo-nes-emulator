@@ -12,4 +12,5 @@ protocol Bus: AnyObject {
     func connect(_ apu: APU)
     func connect(_ cpu: CPU)
     func connect(_ cartridge: Cartridge)
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int)
 }

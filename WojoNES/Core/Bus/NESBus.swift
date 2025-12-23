@@ -25,7 +25,7 @@ class NESBus: Bus {
             case 0 ..< 0x2000:
                 return ram[address & 0x7FF]
             case 0x8000...:
-                return cartridge.read(address: address & 0x1FFF)
+                return 0 // cartridge.read(address: address & 0x1FFF)
             default:
                 return ram[address]
                 print(" !!!!!!!!!!!!!!    Not implemented  !!!!!!!!!!!!!!!! ")
@@ -51,5 +51,9 @@ class NESBus: Bus {
 
     func connect(_ cpu: CPU) {
         self.cpu = cpu
+    }
+
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
+        ppu.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 }
