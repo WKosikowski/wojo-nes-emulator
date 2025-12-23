@@ -18,6 +18,8 @@ public final class NESCPU: CPU {
 
     var statusRegister = StatusRegister()
 
+    var enabled: Bool = false
+
     /// Formerly known as A.
     var accumulator: UInt8 = 0 {
         didSet {
@@ -46,6 +48,8 @@ public final class NESCPU: CPU {
         }
     }
 
+    var dmaOam: Bool = false
+
     /// Represents the Stack Pointer (SP).
     var stackPointer: UInt8 = 0xFF
     /// Represents the Program Counter (PC). Although 6502 uses a 16-bit PC.
@@ -67,6 +71,10 @@ public final class NESCPU: CPU {
 
     func connect(_ bus: any Bus) {
         self.bus = bus
+    }
+
+    func setDmaOam(enable: Bool) {
+        dmaOam = enable
     }
 
     func setZeroNegativeFlags(_ register: UInt8) {

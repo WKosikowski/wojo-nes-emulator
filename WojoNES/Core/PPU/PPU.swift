@@ -7,11 +7,11 @@
 
 protocol PPU {
     func connect(_ bus: Bus)
-    func frameReady() -> Bool
     func step()
-    func read(_ address: UInt16) -> UInt8
-    func write(address: UInt16, value: UInt8)
+    func read(_ address: Int) -> UInt8
+    func write(address: Int, value: UInt8)
     func swapNameTable(bankIdx: Int, swapBankIdx: Int)
 
+    var frameComplete: Bool { get set }
     var frameBuffer: [UInt32] { get set }
 }

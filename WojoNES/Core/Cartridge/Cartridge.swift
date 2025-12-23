@@ -14,4 +14,5 @@ protocol Cartridge: AnyObject {
     var mapper: Mapper { get }
     var chrMemory: BankMemory { get }
     var prgMemory: BankMemory { get }
+    var wRam: [UInt8] { get set }
 }
