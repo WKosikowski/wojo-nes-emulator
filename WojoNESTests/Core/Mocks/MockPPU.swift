@@ -11,9 +11,22 @@ class MockPPU: PPU {
 
     var frameBuffer: [UInt32] = []
 
+    var nameTables: BankMemory = {
+        var memory = BankMemory()
+        // Initialize nametables (2KB VRAM with 1KB banks)
+        memory.banks.append(Array(repeating: 0, count: 0x1000))
+        memory.swapBanks.append(Array(repeating: 0, count: 0x1000))
+        memory.bankSizeValue = 0x400
+        return memory
+    }()
+
     var connectedBus: Bus?
 
     // MARK: Functions
+
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
+        nameTables.swap(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
+    }
 
     func frameReady() -> Bool {
         false

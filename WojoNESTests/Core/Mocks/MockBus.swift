@@ -14,6 +14,8 @@ class MockBus: Bus {
 
     var ram: [Int: UInt8] = [:]
 
+    var ppu = MockPPU()
+
     // MARK: Functions
 
     func read(address: Int) -> UInt8 {
@@ -32,4 +34,8 @@ class MockBus: Bus {
     func connect(_ component: any PPU) { connectedComponents.append(component) }
     func connect(_ component: any CPU) { connectedComponents.append(component) }
     func connect(_ component: any Cartridge) { connectedComponents.append(component) }
+
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
+        ppu.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
+    }
 }

@@ -26,7 +26,7 @@ class NESCartridge: Cartridge {
     let prgROM: Data // PRG ROM data
     let chrROM: Data // CHR ROM data
     let trainer: Data? // Trainer data (512 bytes, if present)
-    var bus: Bus!
+    var bus: Bus?
 
     // Cartridge memory components
     var prgMemory: BankMemory = .init()
@@ -149,7 +149,7 @@ class NESCartridge: Cartridge {
     ///   - bankIdx: Index in the nametable banks array to replace
     ///   - swapBankIdx: Index in the swap banks array to swap in
     func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
-        bus.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
+        bus?.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
     func write(data: Data, address: Int) {
