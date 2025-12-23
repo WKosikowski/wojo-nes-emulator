@@ -11,6 +11,7 @@ protocol PPU {
     func step()
     func read(_ address: UInt16) -> UInt8
     func write(address: UInt16, value: UInt8)
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int)
 
     var frameBuffer: [UInt32] { get set }
 }

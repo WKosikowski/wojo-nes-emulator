@@ -43,4 +43,8 @@ class NESBus: Bus {
     func connect(_ cpu: CPU) {
         self.cpu = cpu
     }
+
+    func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
+        ppu.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
+    }
 }

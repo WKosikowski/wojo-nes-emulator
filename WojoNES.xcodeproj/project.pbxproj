@@ -37,6 +37,7 @@
 		79DAE1BD2DD1043500FE84E3 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79DAE1F42DD1073D00FE84E3 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79DAE2022DD113D900FE84E3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		79F5A79A2EFADFCF001119EC /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -144,6 +145,11 @@
 			sourceTree = "<group>";
 		};
 		79DAE1F62DD1073D00FE84E3 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		79F5A79C2EFADFCF001119EC /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -270,6 +276,10 @@
 				{
 					ProductGroup = 794885862E0DB6CE005AD1F1 /* Products */;
 					ProjectRef = 794885842E0DB6CE005AD1F1 /* WojoNES.xcodeproj */;
+				},
+				{
+					ProductGroup = 79F5A79C2EFADFCF001119EC /* Products */;
+					ProjectRef = 79F5A79A2EFADFCF001119EC /* WojoNES.xcodeproj */;
 				},
 				{
 					ProductGroup = 79DAE1BF2DD1043500FE84E3 /* Products */;

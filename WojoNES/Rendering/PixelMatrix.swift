@@ -3,48 +3,41 @@ import Foundation
 import Metal
 import MetalKit
 
+/// Type alias for a mutable pointer to Int32 pixel data.
+/// Used throughout the rendering pipeline for efficient pixel manipulation.
+typealias PixelBuffer = UnsafeMutablePointer<Int32>
+
+extension PixelBuffer {
+    /// Allocates a new pixel buffer with the specified capacity.
+    /// - Parameter pixels: The number of Int32 pixels to allocate space for.
+    /// - Returns: A newly allocated mutable pointer to Int32 pixel data.
+    static func with(pixels: Int) -> Self {
+        allocate(capacity: pixels)
+    }
+}
+
 // MARK: - PixelMatrix
 
-/// A 2D pixel buffer for rendering and image manipulation.
-///
-/// `PixelMatrix` manages a contiguous buffer of 32-bit ARGB pixel data in row-major order (pixels[y * width + x]).
-/// It provides convenient access via subscript, concatenation operations, and conversion to `CGImage` or Metal textures.
-///
-/// Pixel format: 0xAARRGGBB (32-bit ARGB, where A is the alpha channel).
-///
-/// Example:
-/// ```swift
-/// let matrix = PixelMatrix(width: 256, height: 240)
-/// matrix[0, 0] = 0xFF0000FF  // Set top-left pixel to red
-/// if let image = matrix.image {
-///     // Use CGImage for display
-/// }
-/// ```
+/// Represents a 2D grid of 32-bit ARGB colour pixels.
+/// Provides efficient pixel access, Metal texture conversion, and image I/O operations.
+/// Primarily used for the NES frame buffer (256×240 pixels) and palette rendering.
 public class PixelMatrix {
     // MARK: Properties
 
-    /// Raw pixel data buffer (row-major: pixels[y * width + x]).
-    /// Format: each element is a 32-bit ARGB integer (0xAARRGGBB).
+    /// Mutable buffer pointer to the raw pixel data (32-bit ARGB values per pixel)
     public var pixels: UnsafeMutableBufferPointer<Int32>
 
-    /// Width of the pixel matrix (number of columns).
+    /// Width of the pixel matrix in pixels
     public var width: Int
 
-    /// Height of the pixel matrix (number of rows).
+    /// Height of the pixel matrix in pixels
     public var height: Int
 
     // MARK: Computed Properties
 
-    /// Converts the pixel matrix to a `CGImage` for rendering or display.
-    ///
-    /// Converts internal ARGB (0xAARRGGBB) format to RGBA for Core Graphics.
-    /// The resulting image uses an RGB color space with premultiplied alpha.
-    ///
-    /// - Returns: A `CGImage` suitable for display in UIImageView, NSImageView, or Core Graphics contexts.
-    ///           Returns nil if image creation fails (e.g., invalid dimensions or allocation errors).
-    ///
-    /// Performance note: This method allocates temporary RGBA buffer and creates a new CGImage.
-    /// Cache the result if used multiple times.
+    /// Converts the pixel matrix to a Core Graphics image (CGImage).
+    /// Transforms from internal ARGB format to standard RGBA format for display.
+    /// - Returns: A CGImage suitable for rendering, or nil if conversion fails.
     public var image: CGImage? {
         get {
             // Create a buffer for RGBA data (convert from ARGB)
@@ -57,7 +50,7 @@ public class PixelMatrix {
                 for x in 0 ..< width {
                     let pixel = pixels[y * width + x]
                     let offset = (y * bytesPerRow) + (x * bytesPerPixel)
-                    // Extract ARGB components and convert to RGBA
+                    // Extract ARGB components and convert to RGBA for CGImage compatibility
                     let a = UInt8((pixel >> 24) & 0xFF)
                     let r = UInt8((pixel >> 16) & 0xFF)
                     let g = UInt8((pixel >> 8) & 0xFF)
@@ -69,7 +62,7 @@ public class PixelMatrix {
                 }
             }
 
-            // Create CGImage
+            // Create CGImage from the RGBA data
             guard
                 let provider = CGDataProvider(data: NSData(bytes: &rgbaData, length: totalBytes)),
                 let cgImage = CGImage(
@@ -97,32 +90,16 @@ public class PixelMatrix {
     }
 
     /// Converts the pixel matrix to a Metal texture for GPU rendering.
-    ///
-    /// Creates a Metal device, allocates an RGBA8Unorm texture, and uploads pixel data from the matrix
-    /// (converting from internal ARGB to RGBA format). The texture is configured for both shader read and write.
-    ///
-    /// - Returns: An `MTLTexture` with RGBA8Unorm format suitable for Metal rendering pipelines.
-    ///           Returns nil if Metal device or texture creation fails.
-    ///
-    /// Performance notes:
-    /// - Creates a new Metal device each time; consider caching the device in production code.
-    /// - Allocates temporary RGBA buffer during conversion; cache the result if possible.
-    /// - Suitable for real-time rendering but not for frequent repeated conversions.
-    ///
-    /// Example:
-    /// ```swift
-    /// if let texture = matrix.metalTexture {
-    ///     // Pass texture to Metal render pipeline
-    /// }
-    /// ```
+    /// Allocates a Metal device and texture, then copies pixel data with format conversion (ARGB to RGBA).
+    /// - Returns: An MTLTexture ready for shader operations, or nil if creation fails.
     public var metalTexture: MTLTexture? {
-        // Create Metal device
+        // Create Metal device (required for texture allocation)
         guard let device = MTLCreateSystemDefaultDevice() else {
             print("Failed to create Metal device")
             return nil
         }
 
-        // Create texture descriptor
+        // Create texture descriptor with RGBA format and shader read/write usage
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: .rgba8Unorm,
             width: width,
@@ -131,13 +108,13 @@ public class PixelMatrix {
         )
         descriptor.usage = [.shaderRead, .shaderWrite]
 
-        // Create Metal texture
+        // Allocate Metal texture from the descriptor
         guard let texture = device.makeTexture(descriptor: descriptor) else {
             print("Failed to create Metal texture")
             return nil
         }
 
-        // Convert pixels to RGBA buffer
+        // Convert pixels to RGBA buffer (from internal ARGB format)
         let bytesPerPixel = 4
         let bytesPerRow = bytesPerPixel * width
         let totalBytes = bytesPerRow * height
@@ -160,7 +137,7 @@ public class PixelMatrix {
         }
         print(height, width)
 
-        // Copy data to texture
+        // Copy RGBA data into the Metal texture
         texture.replace(
             region: MTLRegionMake2D(0, 0, width, height),
             mipmapLevel: 0,
@@ -173,13 +150,11 @@ public class PixelMatrix {
 
     // MARK: Lifecycle
 
-    /// Initializes a new pixel matrix with the given dimensions.
-    ///
-    /// All pixels are initialized to red (0xFF0000FF in ARGB format).
-    ///
+    /// Initialises a new pixel matrix with specified dimensions.
+    /// Allocates raw pixel memory and initialises all pixels to a default red colour.
     /// - Parameters:
-    ///   - width: Number of columns
-    ///   - height: Number of rows
+    ///   - width: The width of the matrix in pixels.
+    ///   - height: The height of the matrix in pixels.
     public init(width: Int, height: Int) {
         self.width = width
         self.height = height
@@ -189,14 +164,12 @@ public class PixelMatrix {
 
     // MARK: Functions
 
-    /// Accesses or sets a pixel at (x, y) coordinates.
-    ///
+    /// Subscript for direct pixel access using (x, y) coordinates.
+    /// Performs 2D-to-1D indexing conversion based on row-major storage.
     /// - Parameters:
-    ///   - x: Horizontal coordinate (0 to width-1)
-    ///   - y: Vertical coordinate (0 to height-1)
-    /// - Returns: 32-bit ARGB pixel value (0xAARRGGBB)
-    ///
-    /// Example: `let color = matrix[10, 20]`
+    ///   - x: The X coordinate of the pixel.
+    ///   - y: The Y coordinate of the pixel.
+    /// - Returns: The 32-bit ARGB colour value at the specified coordinate.
     public subscript(x: Int, y: Int) -> Int32 {
         get {
             pixels[y * width + x]
@@ -206,15 +179,10 @@ public class PixelMatrix {
         }
     }
 
-    /// Concatenates two matrices horizontally (side-by-side).
-    ///
-    /// Creates a new matrix with width = self.width + other.width and height = self.height.
-    /// Both matrices must have the same height. Left matrix is copied first, then right matrix.
-    ///
-    /// - Parameter other: The matrix to append on the right
-    /// - Returns: A new matrix with both matrices combined horizontally
-    ///
-    /// Example: `let wide = narrow1.horzCat(narrow2)  // 256x240 + 256x240 = 512x240`
+    /// Concatenates another pixel matrix horizontally (side-by-side).
+    /// Creates a new matrix with combined width and identical height.
+    /// - Parameter other: The pixel matrix to append on the right.
+    /// - Returns: A new PixelMatrix with pixels from both matrices arranged horizontally.
     public func horzCat(_ other: PixelMatrix) -> PixelMatrix {
         let result = PixelMatrix(width: width + other.width, height: height)
         for row in 0 ..< result.height {
@@ -227,16 +195,10 @@ public class PixelMatrix {
         return result
     }
 
-    /// Concatenates two matrices vertically (stacked).
-    ///
-    /// Creates a new matrix with width = self.width and height = self.height + other.height.
-    /// Both matrices must have the same width. Top matrix is copied first, then bottom matrix.
-    /// Uses `fastCopySubrange` for efficient memory copying.
-    ///
-    /// - Parameter other: The matrix to append below
-    /// - Returns: A new matrix with both matrices combined vertically
-    ///
-    /// Example: `let tall = short1.vertCat(short2)  // 256x120 + 256x120 = 256x240`
+    /// Concatenates another pixel matrix vertically (top-to-bottom).
+    /// Creates a new matrix with identical width and combined height.
+    /// - Parameter other: The pixel matrix to append below.
+    /// - Returns: A new PixelMatrix with pixels from both matrices arranged vertically.
     public func vertCat(_ other: PixelMatrix) -> PixelMatrix {
         let result = PixelMatrix(width: width, height: height + other.height)
         fastCopySubrange(
@@ -254,18 +216,13 @@ public class PixelMatrix {
         return result
     }
 
-    /// Efficiently copies a contiguous range of elements between buffers using `memmove`.
-    ///
-    /// This inline helper method bypasses Swift array bounds checking for performance.
-    /// Used internally by `vertCat` to copy pixel rows.
-    ///
+    /// Efficiently copies a range of typed memory from one buffer to another.
+    /// Uses memmove for optimal performance with arbitrary data types.
     /// - Parameters:
-    ///   - source: Source buffer (generic type `T`)
-    ///   - sourceRange: Range [lowerBound, upperBound) in the source buffer
-    ///   - destination: Destination buffer (same type `T`)
-    ///   - destinationStart: Starting index in the destination buffer
-    ///
-    /// - Precondition: sourceRange must be within source bounds; destination must have space for the range
+    ///   - source: The source buffer to copy from.
+    ///   - sourceRange: The range within the source buffer to copy.
+    ///   - destination: The destination buffer to copy to.
+    ///   - destinationStart: The starting index in the destination buffer.
     @inline(__always)
     func fastCopySubrange<T>(
         from source: UnsafeMutableBufferPointer<T>,
@@ -286,35 +243,14 @@ public class PixelMatrix {
     }
 }
 
-// MARK: - PNG File Loading
-
-/// Extension to read PNG files into a PixelMatrix
+/// Extension to PixelMatrix for PNG file I/O operations.
 public extension PixelMatrix {
     /// Creates a PixelMatrix from a PNG file on disk.
-    ///
-    /// Loads PNG image data using Core Graphics and converts to the internal ARGB format (0xAARRGGBB).
-    /// The PNG is decoded into RGBA format first, then rearranged to match the matrix's ARGB layout.
-    ///
-    /// - Parameter filePath: Full file path to the PNG image
-    /// - Returns: A new PixelMatrix with pixel data loaded from the PNG file, or nil if loading fails
-    ///
-    /// Failure reasons include:
-    /// - File not found or unreadable
-    /// - Invalid PNG format
-    /// - Image dimensions exceed memory capacity
-    /// - Core Graphics context creation fails
-    ///
-    /// Example:
-    /// ```swift
-    /// if let matrix = PixelMatrix.fromPNG(filePath: "/path/to/image.png") {
-    ///     print("Loaded \(matrix.width)x\(matrix.height) image")
-    /// }
-    /// ```
-    ///
-    /// Performance note: This method allocates a temporary CGContext and buffer for format conversion.
-    /// For large images or frequent loads, consider caching results.
+    /// Reads the PNG, converts it to RGBA, and stores the pixel data in the matrix.
+    /// - Parameter filePath: The file system path to the PNG file.
+    /// - Returns: A new PixelMatrix with the PNG's pixel data, or nil if loading or conversion fails.
     static func fromPNG(filePath: String) -> PixelMatrix? {
-        // Load PNG data
+        // Load PNG data from the specified file path
         let url = URL(fileURLWithPath: filePath)
 
         guard
@@ -326,17 +262,17 @@ public extension PixelMatrix {
             return nil
         }
 
-        // Get image dimensions
+        // Extract image dimensions from the Core Graphics image
         let width = cgImage.width
         let height = cgImage.height
 
-        // Ensure RGBA format (32 bits per pixel)
+        // Ensure RGBA format (32 bits per pixel, 8 bits per component)
         let bitsPerComponent = 8
         let bytesPerRow = width * 4
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo: CGBitmapInfo = [.byteOrder32Big, CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
 
-        // Create a context to draw the image
+        // Create a Core Graphics context for pixel data extraction
         guard
             let context = CGContext(
                 data: nil,
@@ -352,20 +288,19 @@ public extension PixelMatrix {
             return nil
         }
 
-        // Draw the image into the context
+        // Render the PNG image into the context to obtain pixel data
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
 
-        // Access raw pixel data
+        // Access the raw pixel data from the Core Graphics context
         guard let pixelData = context.data else {
             print("Failed to access pixel data")
             return nil
         }
 
-        // Create PixelMatrix instance
+        // Create a new PixelMatrix instance to store the pixel data
         let pixmap = PixelMatrix(width: width, height: height)
 
-        // Convert pixel data to ARGB (0xAARRGGBB)
-        // Input data is RGBA in big-endian format
+        // Convert pixel data from RGBA to our internal ARGB format (0xAARRGGBB)
         let pixelBuffer = pixelData.bindMemory(to: UInt8.self, capacity: width * height * 4)
         for y in 0 ..< height {
             for x in 0 ..< width {
@@ -374,10 +309,23 @@ public extension PixelMatrix {
                 let g = Int32(pixelBuffer[offset + 1])
                 let b = Int32(pixelBuffer[offset + 2])
                 let a = Int32(pixelBuffer[offset + 3])
+                // Store as ARGB (0xAARRGGBB)
                 pixmap[x, y] = (a << 24) | (r << 16) | (g << 8) | b
             }
         }
 
         return pixmap
+    }
+
+    /// Copies a block of pixels from a pixel buffer into this matrix.
+    /// Efficiently copies a contiguous run of pixels using memcpy.
+    /// - Parameters:
+    ///   - pixelLine: The source pixel buffer to copy from.
+    ///   - start: The destination index (in the pixel matrix) where copying begins.
+    ///   - bytes: The number of 32-bit pixels to copy.
+    internal func copyPixels(from pixelLine: PixelBuffer, start: Int, bytes: Int) {
+        let dest = pixels.baseAddress!.advanced(by: start)
+        let bytes = bytes * MemoryLayout<Int32>.stride
+        memcpy(dest, pixelLine, bytes)
     }
 }
