@@ -11,6 +11,8 @@ class MockPPU: PPU {
 
     var frameBuffer: [UInt32] = []
 
+    var frame: PixelMatrix = .init(width: 256, height: 240)
+
     var nameTables: BankMemory = {
         var memory = BankMemory()
         // Initialise nametables (2KB VRAM with 1KB banks)
@@ -39,4 +41,8 @@ class MockPPU: PPU {
     func write(address: Int, value: UInt8) {}
 
     func connect(_ bus: any Bus) { connectedBus = bus }
+
+    func getFrame() -> PixelMatrix {
+        frame
+    }
 }
