@@ -13,6 +13,8 @@ class MockCPU: CPU {
 
     var enabled: Bool = false
 
+    var cycle: Int = 0
+
     // MARK: Functions
 
     func step() {}

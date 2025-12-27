@@ -79,6 +79,12 @@ class NESPPU: PPU {
     var mask: MaskRegister = .init()
     var statusRegister: PPUStatusRegister = .init()
 
+    var nextCycle: Float = 0
+
+    // MARK: - Interrupts
+
+    var nmi: Interrupt!
+
     // MARK: Computed Properties
 
     var vramData: UInt8 {
@@ -163,12 +169,14 @@ class NESPPU: PPU {
         self.bus = bus
     }
 
-    func frameReady() -> Bool {
-        false
+    func addNmiInterrupt(_ interrupt: Interrupt) {
+        nmi = interrupt
     }
 
     func step() {
-        frameStep()
+        while Int(nextCycle) <= bus.cycles {
+            frameStep()
+        }
     }
 
     /// Reads a value from the specified PPU register address.
@@ -246,6 +254,9 @@ class NESPPU: PPU {
                 nextRenderingVramRegister.nameTableY = controlRegister.nameTableY
                 // Note: NMI edge detection would occur here; CPU would respond during next cycle
                 let suppressNMI = y == -1 && x == 0
+                if !prevNMI, controlRegister.enableNMI, statusRegister.verticalBlank, !suppressNMI {
+                    nmi.start(delay: 2)
+                }
 
             case 1: // PPU Mask Register (0x2001)
                 // Update rendering flags: background/sprite visibility and colour emphasis
@@ -630,7 +641,9 @@ class NESPPU: PPU {
             // NMI trigger point (y == screen.height + 1, x == 2): Would normally trigger
             // the non-maskable interrupt if enabled. This cycle is where the 6502 responds.
             case (frame.height + 1, 2):
-                // TODO: Add NMI triggering
+                if controlRegister.enableNMI, !preventVBL {
+                    nmi.start(delay: 1)
+                }
                 y = maxY + 1
                 x = -1
 
@@ -647,6 +660,7 @@ class NESPPU: PPU {
                 // TODO: add cycles handling
                 // Toggle the odd frame flag: on odd frames, one cycle is skipped for NTSC timing.
                 oddFrame.toggle()
+                bus.resetCycles()
                 // Reset scanline counter and pixel counter for the next frame.
                 self.y = -1
                 x = 0

@@ -18,6 +18,8 @@ class MockBus: Bus {
 
     var ppu: PPU! = MockPPU()
 
+    var dmaOamAddr: Int = 0
+
     // MARK: Functions
 
     func read(address: Int) -> UInt8 {

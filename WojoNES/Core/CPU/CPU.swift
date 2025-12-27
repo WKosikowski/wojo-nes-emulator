@@ -10,7 +10,10 @@ protocol CPU: AnyObject {
     func handleIRQ()
     func handleNMI()
     func setDmaOam(enable: Bool)
-
+    func addNmiInterrupt(_ interrupt: Interrupt)
+    func addApuIrqInterrupt(_ interrupt: Interrupt)
+    func addDmcIrqInterrupt(_ interrupt: Interrupt)
+    func resetCycles()
     func connect(_ bus: Bus)
     var enabled: Bool { get }
     var cycle: Int { get set }

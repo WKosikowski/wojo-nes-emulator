@@ -27,6 +27,12 @@ class NESBus: Bus {
     /// Address used for OAM DMA transfers (high byte)
     var dmaOamAddr: Int = 0
 
+    // MARK: Computed Properties
+
+    var cycles: Int {
+        cpu.cycle
+    }
+
     // MARK: Lifecycle
 
     init() {}
@@ -155,5 +161,9 @@ class NESBus: Bus {
             cpu.step()
         }
         print("frame complete")
+    }
+
+    func resetCycles() {
+        cpu.resetCycles()
     }
 }

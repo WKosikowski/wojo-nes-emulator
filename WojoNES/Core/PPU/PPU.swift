@@ -12,6 +12,7 @@ protocol PPU {
     func write(address: Int, value: UInt8)
     func swapNameTable(bankIdx: Int, swapBankIdx: Int)
     func getFrame() -> PixelMatrix
+    func addNmiInterrupt(_ interrupt: Interrupt)
 
     var frameComplete: Bool { get set }
     var frameBuffer: [UInt32] { get set }

@@ -39,6 +39,8 @@ public final class NESCPU: CPU {
 
     var enabled: Bool = false
 
+    var interrupts: [Interrupt] = []
+
     /// Formerly known as A.
     var accumulator: UInt8 = 0 {
         didSet {
@@ -84,6 +86,15 @@ public final class NESCPU: CPU {
 
     init() {
         operations = NESCPU.setupOperations()
+
+        nmi = Interrupt()
+        apuIrq = Interrupt()
+        dmcIrq = Interrupt()
+        mapperIrq = Interrupt()
+        nmi.setCPU(self)
+        apuIrq.setCPU(self)
+        dmcIrq.setCPU(self)
+        mapperIrq.setCPU(self)
     }
 
     // MARK: Functions
@@ -202,12 +213,33 @@ public final class NESCPU: CPU {
         statusRegister.carry = reg >= mem
         resultRegister = UInt8(reg &- mem)
     }
+
+    func addNmiInterrupt(_ interrupt: Interrupt) {
+        nmi = interrupt
+        nmi.setCPU(self)
+        interrupts.append(nmi)
+    }
+
+    func addApuIrqInterrupt(_ interrupt: Interrupt) {
+        apuIrq = interrupt
+        apuIrq.setCPU(self)
+        interrupts.append(apuIrq)
+    }
+
+    func addDmcIrqInterrupt(_ interrupt: Interrupt) {
+        dmcIrq = interrupt
+        dmcIrq.setCPU(self)
+        interrupts.append(dmcIrq)
+    }
 }
 
 extension NESCPU {
     func step() {
-        let opcode = read(programCounter)
+        let irqActive = reset || nmi.isActive || (!irqDisabled && interrupts.contains { $0.isActive })
+        var opcode = read(programCounter)
         programCounter += 1
+        if irqActive { opcode = 0 }
+        statusRegister.break = !irqActive
         currentOperation = operations[Int(opcode)]
 //        print(operation.name)
         switch currentOperation.addressingMode {
