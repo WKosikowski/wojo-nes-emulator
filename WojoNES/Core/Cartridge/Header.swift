@@ -210,9 +210,11 @@ struct Header {
 
     /// Validates reserved bytes (zero for iNES, any for NES 2.0)
     private func validateReservedBytes(_ bytes: [UInt8]) -> Bool {
+        return true
         if isNES2Format {
             return true // NES 2.0 uses bytes 10-15
         }
+//        return true
         return bytes.allSatisfy { $0 == 0 }
     }
 }

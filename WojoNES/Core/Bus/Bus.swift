@@ -13,4 +13,8 @@ protocol Bus: AnyObject {
     func connect(_ cpu: CPU)
     func connect(_ cartridge: Cartridge)
     func swapNameTable(bankIdx: Int, swapBankIdx: Int)
+    func step()
+
+    var controller: [UInt8] { get set }
+    var ppu: PPU! { get }
 }

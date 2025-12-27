@@ -52,7 +52,21 @@ class NESEmulator: Emulator {
 
     func load() {}
 
+    func mapController(_ controller: NESController) {
+        bus.controller[0] = controller.toByte()
+    }
+
     func connect(cartridge: any Cartridge) {
         self.cartridge = cartridge
+    }
+
+    func step() {
+        print("step nes")
+        bus.step()
+    }
+
+    func getFrame() -> PixelMatrix {
+        print("get frame")
+        return ppu.getFrame()
     }
 }
