@@ -16,7 +16,26 @@ public final class NESCPU: CPU {
 
     var bus: Bus!
 
+    var currentOperation: Operation!
+
+    var reset = false
+
+    var nmi: Interrupt!
+    var apuIrq: Interrupt!
+    var dmcIrq: Interrupt!
+    var mapperIrq: Interrupt!
+
+    var cycle: Int = 0
+    var additionalCycle: Int = 0
+    var toggleIrqDisabled = false
+
     var statusRegister = StatusRegister()
+
+    var dmaDmcEnabled = false
+    var dmaOamEnabled = false
+
+    var irqDisabled: Bool = false
+    var lastIrqDisabled: Bool = false
 
     var enabled: Bool = false
 
@@ -82,6 +101,19 @@ public final class NESCPU: CPU {
         statusRegister.negative = register & 0b1000_0000 != 0
     }
 
+    func readWord(_ address: Int) -> Int {
+        let lo = Int(read(address))
+        let hi = Int(read(address + 1))
+        return (hi << 8) | lo
+    }
+
+    func resetProgram() {
+        reset = true
+        cycle = 0
+        step()
+        write(0x4015, 0)
+    }
+
     func read(_ address: Int) -> UInt8 {
         if address == NESCPU.fakeAccumulatorAddress {
             return accumulator
@@ -89,12 +121,67 @@ public final class NESCPU: CPU {
         return bus.read(address: address)
     }
 
+    func incrementCycle() {
+        cycle += 1
+    }
+
+    func ppuStep() {
+        bus.ppu.step()
+        if toggleIrqDisabled { // Assuming toggleIrqDisable in StatusRegister
+            toggleIrqDisabled = false
+            statusRegister.irqDisabled = !statusRegister.irqDisabled
+        }
+        irqDisabled = lastIrqDisabled
+        lastIrqDisabled = statusRegister.irqDisabled
+    }
+
     func write(_ address: Int, _ value: UInt8) {
         if address == NESCPU.fakeAccumulatorAddress {
             accumulator = value
         } else {
+            incrementCycle()
             bus.write(address: address, data: value)
+            ppuStep()
         }
+    }
+
+    func resetCycles() {
+        additionalCycle += cycle & 1
+        nmi.resetCycles()
+        apuIrq.resetCycles()
+        dmcIrq.resetCycles()
+        mapperIrq.resetCycles()
+        cycle = 0
+    }
+
+    func popStack() -> Int {
+        stackPointer = stackPointer &+ 1
+        return Int(read(0x100 | Int(stackPointer)))
+    }
+
+    func pushStack(_ value: Int) {
+        write(0x100 | Int(stackPointer), UInt8(value & 0xFF))
+        stackPointer = stackPointer &- 1
+    }
+
+    func delayInterrupts() {
+        nmi.delayActivating()
+        apuIrq.delayActivating()
+        dmcIrq.delayActivating()
+        mapperIrq.delayActivating()
+    }
+
+    func readPageCross(address: Int, pc: Int) {
+        if currentOperation.hasReadCycle || (address & 0xFF00) != (pc & 0xFF00) {
+            _ = read(pc & 0xFF00 | address & 0xFF)
+        }
+    }
+
+    func branch(to address: Int) {
+        _ = read(programCounter)
+        delayInterrupts()
+        readPageCross(address: address, pc: programCounter)
+        programCounter = address
     }
 
     func pushToStack(_ value: UInt8) {
@@ -121,9 +208,9 @@ extension NESCPU {
     func step() {
         let opcode = read(programCounter)
         programCounter += 1
-        let operation = operations[Int(opcode)]
+        currentOperation = operations[Int(opcode)]
 //        print(operation.name)
-        switch operation.addressingMode {
+        switch currentOperation.addressingMode {
             case .implied:
                 imp()
             case .immediate:
@@ -150,7 +237,7 @@ extension NESCPU {
                 idy()
         }
 
-        switch operation.instruction {
+        switch currentOperation.instruction {
             case .adc:
                 adc()
             case .sbc:
@@ -306,6 +393,55 @@ extension NESCPU {
             case .nop:
                 nop()
         }
+    }
+
+    func dmaTransfer(address: Int) {
+        var oamValue = 0
+        var oamCount = 0
+        var dmcLatched = false
+        var halt = false
+        var dummyRead = false
+        if dmaDmcEnabled {
+            dmcLatched = true
+            dummyRead = true
+        }
+        var isGetCycle = isReadingCycle()
+        while dmaDmcEnabled || dmaOamEnabled {
+            if isGetCycle {
+                if dmaDmcEnabled, !halt, !dummyRead {
+                    dmcLatched = false
+                    dmaDmcEnabled = false
+                } else if dmaOamEnabled {
+                    oamValue = Int(read(bus.dmaOamAddr)) // Assuming dmaOamAddr in Bus
+                    bus.dmaOamAddr += 1
+                    oamCount += 1
+                } else {
+                    _ = read(address)
+                }
+            } else if dmaOamEnabled, (oamCount & 1) != 0 {
+                write(0x2004, UInt8(oamValue))
+                oamCount += 1
+                if oamCount == 0x200 {
+                    dmaOamEnabled = false
+                }
+            } else {
+                _ = read(address)
+            }
+            if dmaDmcEnabled {
+                if dmcLatched {
+                    if halt { halt = false } else { dummyRead = false }
+                } else {
+                    dmcLatched = true
+                    halt = true
+                    dummyRead = true
+                }
+            }
+            isGetCycle = !isGetCycle
+        }
+    }
+
+    func isReadingCycle() -> Bool {
+        ((cycle + additionalCycle) & 1) == 0
     }
 
     func handleIRQ() {}

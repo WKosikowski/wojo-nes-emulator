@@ -13,4 +13,5 @@ protocol CPU: AnyObject {
 
     func connect(_ bus: Bus)
     var enabled: Bool { get }
+    var cycle: Int { get set }
 }
