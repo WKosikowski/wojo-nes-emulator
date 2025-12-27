@@ -29,6 +29,7 @@
 		7946CE7C2EF57CE000569F0D /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		794885842E0DB6CE005AD1F1 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		794885D12E0EFFBC005AD1F1 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		7951C25A2F00351E002B0EDD /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79743E1B2E11CBE400A73660 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79C4E78C2E113E5E004880E7 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79D4827E2E1495A40047E620 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
@@ -105,6 +106,11 @@
 			sourceTree = "<group>";
 		};
 		794885D32E0EFFBC005AD1F1 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7951C25C2F00351E002B0EDD /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -310,6 +316,10 @@
 				{
 					ProductGroup = 7911FE352EFB0B1300C6855C /* Products */;
 					ProjectRef = 7911FE332EFB0B1300C6855C /* WojoNES.xcodeproj */;
+				},
+				{
+					ProductGroup = 7951C25C2F00351E002B0EDD /* Products */;
+					ProjectRef = 7951C25A2F00351E002B0EDD /* WojoNES.xcodeproj */;
 				},
 			);
 			projectRoot = "";
