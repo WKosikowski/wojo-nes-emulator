@@ -704,6 +704,10 @@ class NESPPU: PPU {
         }
     }
 
+    func getFrame() -> PixelMatrix {
+        frame
+    }
+
     // MARK: - VRAM Helper Methods
 
     /// Calculates the palette index for memory access, accounting for palette RAM mirroring.

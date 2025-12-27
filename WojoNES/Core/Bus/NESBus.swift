@@ -149,10 +149,11 @@ class NESBus: Bus {
 
     /// Run the main frame loop until the PPU completes a frame.
     /// The CPU steps while the PPU renders the current frame.
-    func frameLoop() {
+    func step() {
         ppu.frameComplete = false
         while !ppu.frameComplete {
             cpu.step()
         }
+        print("frame complete")
     }
 }

@@ -10,11 +10,13 @@
 class MockBus: Bus {
     // MARK: Properties
 
+    var controller: [UInt8] = .init(repeating: 0, count: 2)
+
     var connectedComponents: [Any] = []
 
     var ram: [Int: UInt8] = [:]
 
-    var ppu = MockPPU()
+    var ppu: PPU! = MockPPU()
 
     // MARK: Functions
 
@@ -38,4 +40,6 @@ class MockBus: Bus {
     func swapNameTable(bankIdx: Int, swapBankIdx: Int) {
         ppu.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
+
+    func step() {}
 }
