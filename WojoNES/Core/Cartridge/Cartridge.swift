@@ -15,4 +15,5 @@ protocol Cartridge: AnyObject {
     var chrMemory: BankMemory { get }
     var prgMemory: BankMemory { get }
     var wRam: [UInt8] { get set }
+    var tvSystem: TVSystem { get }
 }

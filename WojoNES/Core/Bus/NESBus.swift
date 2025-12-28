@@ -29,7 +29,7 @@ class NESBus: Bus {
 
     // MARK: Computed Properties
 
-    var cycles: Int {
+    var cycle: Int {
         cpu.cycle
     }
 

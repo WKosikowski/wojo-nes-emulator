@@ -23,7 +23,6 @@ public final class NESCPU: CPU {
     var nmi: Interrupt!
     var apuIrq: Interrupt!
     var dmcIrq: Interrupt!
-    var mapperIrq: Interrupt!
 
     var cycle: Int = 0
     var additionalCycle: Int = 0
@@ -86,15 +85,6 @@ public final class NESCPU: CPU {
 
     init() {
         operations = NESCPU.setupOperations()
-
-        nmi = Interrupt()
-        apuIrq = Interrupt()
-        dmcIrq = Interrupt()
-        mapperIrq = Interrupt()
-        nmi.setCPU(self)
-        apuIrq.setCPU(self)
-        dmcIrq.setCPU(self)
-        mapperIrq.setCPU(self)
     }
 
     // MARK: Functions
@@ -138,7 +128,7 @@ public final class NESCPU: CPU {
 
     func ppuStep() {
         bus.ppu.step()
-        if toggleIrqDisabled { // Assuming toggleIrqDisable in StatusRegister
+        if toggleIrqDisabled {
             toggleIrqDisabled = false
             statusRegister.irqDisabled = !statusRegister.irqDisabled
         }
@@ -161,7 +151,6 @@ public final class NESCPU: CPU {
         nmi.resetCycles()
         apuIrq.resetCycles()
         dmcIrq.resetCycles()
-        mapperIrq.resetCycles()
         cycle = 0
     }
 
@@ -179,7 +168,6 @@ public final class NESCPU: CPU {
         nmi.delayActivating()
         apuIrq.delayActivating()
         dmcIrq.delayActivating()
-        mapperIrq.delayActivating()
     }
 
     func readPageCross(address: Int, pc: Int) {
@@ -444,7 +432,7 @@ extension NESCPU {
                     dmcLatched = false
                     dmaDmcEnabled = false
                 } else if dmaOamEnabled {
-                    oamValue = Int(read(bus.dmaOamAddr)) // Assuming dmaOamAddr in Bus
+                    oamValue = Int(read(bus.dmaOamAddr))
                     bus.dmaOamAddr += 1
                     oamCount += 1
                 } else {

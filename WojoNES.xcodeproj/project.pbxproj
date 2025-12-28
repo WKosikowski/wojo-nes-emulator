@@ -29,6 +29,7 @@
 		7946CE7C2EF57CE000569F0D /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		794885842E0DB6CE005AD1F1 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		794885D12E0EFFBC005AD1F1 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		79502CB22F0071FB002F6B7F /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		7951C25A2F00351E002B0EDD /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79743E1B2E11CBE400A73660 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79C4E78C2E113E5E004880E7 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
@@ -106,6 +107,11 @@
 			sourceTree = "<group>";
 		};
 		794885D32E0EFFBC005AD1F1 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		79502CB42F0071FB002F6B7F /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -280,6 +286,10 @@
 				{
 					ProductGroup = 794885D32E0EFFBC005AD1F1 /* Products */;
 					ProjectRef = 794885D12E0EFFBC005AD1F1 /* WojoNES.xcodeproj */;
+				},
+				{
+					ProductGroup = 79502CB42F0071FB002F6B7F /* Products */;
+					ProjectRef = 79502CB22F0071FB002F6B7F /* WojoNES.xcodeproj */;
 				},
 				{
 					ProductGroup = 791D92EF2EF7FA03005FC1B2 /* Products */;
@@ -538,6 +548,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;
@@ -575,6 +586,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;

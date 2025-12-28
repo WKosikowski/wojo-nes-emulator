@@ -14,6 +14,7 @@ protocol PPU {
     func getFrame() -> PixelMatrix
     func addNmiInterrupt(_ interrupt: Interrupt)
 
+    var nmi: Interrupt! { get }
     var frameComplete: Bool { get set }
     var frameBuffer: [UInt32] { get set }
 }

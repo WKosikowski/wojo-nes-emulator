@@ -18,7 +18,15 @@ class MockBus: Bus {
 
     var ppu: PPU! = MockPPU()
 
+    var cpu = MockCPU()
+
     var dmaOamAddr: Int = 0
+
+    // MARK: Computed Properties
+
+    var cycle: Int {
+        cpu.cycle
+    }
 
     // MARK: Functions
 
@@ -44,4 +52,8 @@ class MockBus: Bus {
     }
 
     func step() {}
+
+    func resetCycles() {
+        cpu.resetCycles()
+    }
 }

@@ -17,4 +17,8 @@ protocol CPU: AnyObject {
     func connect(_ bus: Bus)
     var enabled: Bool { get }
     var cycle: Int { get set }
+    var nmi: Interrupt! { get }
+    var apuIrq: Interrupt! { get }
+    var dmcIrq: Interrupt! { get }
+    var interrupts: [Interrupt] { get }
 }

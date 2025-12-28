@@ -11,6 +11,8 @@ class MockPPU: PPU {
 
     var frameBuffer: [UInt32] = []
 
+    var nmi: Interrupt!
+
     var frame: PixelMatrix = .init(width: 256, height: 240)
 
     var nameTables: BankMemory = {
@@ -44,5 +46,9 @@ class MockPPU: PPU {
 
     func getFrame() -> PixelMatrix {
         frame
+    }
+
+    func addNmiInterrupt(_ interrupt: WojoNES.Interrupt) {
+        nmi = interrupt
     }
 }

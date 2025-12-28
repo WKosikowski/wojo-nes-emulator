@@ -80,6 +80,9 @@ class NESPPU: PPU {
     var statusRegister: PPUStatusRegister = .init()
 
     var nextCycle: Float = 0
+    var additionalCycles: Int = 2
+    var clockRatio: Float = 3
+    let cyclesCountPerFrame: Int
 
     // MARK: - Interrupts
 
@@ -133,8 +136,12 @@ class NESPPU: PPU {
         self.cartridge = cartridge
         model = cartridge.getModel()
 
+        clockRatio = model.ppuClockRatio
+
         maxX = model.ppuMaxX
         maxY = model.ppuMaxY
+
+        cyclesCountPerFrame = (maxX + 2) * (maxY + 2)
 
         for i in 0 ..< 32 {
             paletteIndices[i] = 0
@@ -174,7 +181,7 @@ class NESPPU: PPU {
     }
 
     func step() {
-        while Int(nextCycle) <= bus.cycles {
+        while Int(nextCycle) <= bus.cycle {
             frameStep()
         }
     }
@@ -616,6 +623,9 @@ class NESPPU: PPU {
             // End of pre-render scanline: transition to the next frame. This marks the
             // completion of one full PPU frame (including vertical blank period).
             case (-1, 337):
+                if cartridge.tvSystem == .ntsc, renderEnabled, oddFrame {
+                    additionalCycles -= 1
+                }
                 y = 0
                 x = 0
 
@@ -657,7 +667,7 @@ class NESPPU: PPU {
             case let (y, _) where y > maxY:
                 // Mark the frame as complete so the emulator can present the screen buffer.
                 frameComplete = true
-                // TODO: add cycles handling
+                additionalCycles = (cyclesCountPerFrame + additionalCycles) % 3
                 // Toggle the odd frame flag: on odd frames, one cycle is skipped for NTSC timing.
                 oddFrame.toggle()
                 bus.resetCycles()
@@ -671,6 +681,8 @@ class NESPPU: PPU {
                 y += 1
                 x = 0
         }
+
+        nextCycle = Float((maxX + 2) * (y + 1) + x + 1 + additionalCycles) / clockRatio
     }
 
     /// Fetches sprite pattern data for a specific sprite row during scanline rendering.

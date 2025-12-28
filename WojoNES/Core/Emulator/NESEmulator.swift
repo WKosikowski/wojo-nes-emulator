@@ -39,9 +39,9 @@ class NESEmulator: Emulator {
         apu.connect(bus)
         ppu.connect(bus)
 
-        var nmi = Interrupt()
-        var apuIrq = Interrupt()
-        var dmcIrq = Interrupt()
+        let nmi = Interrupt()
+        let apuIrq = Interrupt()
+        let dmcIrq = Interrupt()
 
         cpu.addNmiInterrupt(nmi)
         cpu.addApuIrqInterrupt(apuIrq)
