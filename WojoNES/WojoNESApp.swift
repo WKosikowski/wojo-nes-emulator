@@ -51,6 +51,8 @@ struct WojoNESApp: App {
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    @StateObject var viewModel: NESViewModel = .init()
+
     // MARK: Computed Properties
 
     var body: some Scene {
@@ -59,6 +61,11 @@ struct WojoNESApp: App {
                 .frame(minWidth: 400, minHeight: 400)
         }
         .windowStyle(.hiddenTitleBar)
+
+        Window(Windows.options.title, id: Windows.options.identifier) {
+            ControllerConfigView()
+                .environmentObject(viewModel)
+        }
     }
 
     var commands: some Commands {
@@ -71,5 +78,15 @@ struct WojoNESApp: App {
                 modifiers: [.command]
             )
         }
+    }
+}
+
+// MARK: - SecondView
+
+struct SecondView: View {
+    var body: some View {
+        Text("This is the second window")
+            .frame(width: 300, height: 200)
+            .padding()
     }
 }

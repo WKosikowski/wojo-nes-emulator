@@ -16,11 +16,16 @@ struct ControllerButton: View {
     var body: some View {
         Button(action: action) {
             Text(viewModel.getControllerKeyBinding(button: button))
-                .font(.caption)
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.white)
-//                .padding(5)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
+                .frame(maxWidth: .infinity)
                 .background(isSelected ? Color.blue : Color.black)
-                .cornerRadius(5)
+                .cornerRadius(6)
         }
+        .buttonStyle(.plain)
     }
 }

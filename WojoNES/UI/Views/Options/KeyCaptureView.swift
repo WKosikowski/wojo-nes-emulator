@@ -28,6 +28,7 @@ struct KeyCaptureView: NSViewRepresentable {
             guard parent.isCapturing, let button = parent.selectedButton else { return }
             let key = event.charactersIgnoringModifiers ?? ""
             if !key.isEmpty {
+                print("[KeyCaptureView] Captured key: \(key) for button \(button.rawValue)")
                 parent.viewModel.setControllerKeyBinding(button: button, key: key)
                 parent.isCapturing = false
                 parent.selectedButton = nil

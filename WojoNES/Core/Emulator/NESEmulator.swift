@@ -16,21 +16,22 @@ class NESEmulator: Emulator {
     let model: NESModel
 
     /// The NES controller instance that tracks button states and key bindings
-    private var controller: NESController = .init()
+    private let controller: NESController
 
     // MARK: Lifecycle
 
-    convenience init(cartridge: Cartridge) {
+    convenience init(cartridge: Cartridge, controller: NESController = NESController()) {
         let ppu = NESPPU(cartridge: cartridge)
-        self.init(bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge)
+        self.init(bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge, controller: controller)
     }
 
-    init(bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge) {
+    init(bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge, controller: NESController = NESController()) {
         self.bus = bus
         self.cpu = cpu
         self.apu = apu
         self.ppu = ppu
         self.cartridge = cartridge
+        self.controller = controller
         model = cartridge.getModel()
 
         // connect all components

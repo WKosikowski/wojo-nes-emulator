@@ -21,6 +21,7 @@ class NESViewModel: ObservableObject {
     @Published var pixelMap: PixelMatrix = .init(width: 256, height: 240)
 
     private var nes: NESEmulator?
+    private let controller: NESController = .init()
     private var displayLink: CVDisplayLink?
     private var lastUpdateTime: CFTimeInterval = 0
     private var frameCount: Int = 0
@@ -49,6 +50,7 @@ class NESViewModel: ObservableObject {
     ///   - button: The NES button to bind (e.g., .a, .b, .up, .down)
     ///   - key: The keyboard key string to bind to the button
     func setControllerKeyBinding(button: NESButton, key: String) {
+        print("[NESViewModel] Setting binding: \(button.rawValue) -> \(key)")
         nes?.setControllerKeyBinding(button: button, key: key)
     }
 
@@ -56,7 +58,9 @@ class NESViewModel: ObservableObject {
     /// - Parameter button: The NES button to query
     /// - Returns: The keyboard key string bound to the button, or a placeholder if not configured
     func getControllerKeyBinding(button: NESButton) -> String {
-        nes?.getControllerKeyBinding(button: button) ?? "Not Set"
+        let binding = nes?.getControllerKeyBinding(button: button) ?? "Not Set"
+        print("[NESViewModel] Getting binding: \(button.rawValue) -> \(binding)")
+        return binding
     }
 
     func resume() {
@@ -88,7 +92,7 @@ class NESViewModel: ObservableObject {
             if result == .OK, let url = openPanel.url {
                 do {
                     let cartridge = try NESCartridge(data: Data(contentsOf: url))
-                    nes = NESEmulator(cartridge: cartridge)
+                    nes = NESEmulator(cartridge: cartridge, controller: controller)
 
                     errorMessage = nil
                 } catch {
