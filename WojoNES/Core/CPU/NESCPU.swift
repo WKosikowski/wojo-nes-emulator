@@ -36,7 +36,7 @@ public final class NESCPU: CPU {
     var irqDisabled: Bool = false
     var lastIrqDisabled: Bool = false
 
-    var enabled: Bool = false
+    var enabled: Bool = true
 
     var interrupts: [Interrupt] = []
 
@@ -68,10 +68,8 @@ public final class NESCPU: CPU {
         }
     }
 
-    var dmaOam: Bool = false
-
     /// Represents the Stack Pointer (SP).
-    var stackPointer: UInt8 = 0xFF
+    var stackPointer: UInt8 = 0
     /// Represents the Program Counter (PC). Although 6502 uses a 16-bit PC.
     var programCounter: Int = 0
 
@@ -94,7 +92,7 @@ public final class NESCPU: CPU {
     }
 
     func setDmaOam(enable: Bool) {
-        dmaOam = enable
+        dmaOamEnabled = enable
     }
 
     func setZeroNegativeFlags(_ register: UInt8) {
@@ -119,17 +117,33 @@ public final class NESCPU: CPU {
         if address == NESCPU.fakeAccumulatorAddress {
             return accumulator
         }
-        return bus.read(address: address)
+
+        // Handle DMA transfers if pending
+        if enabled && (dmaOamEnabled || dmaDmcEnabled) {
+            incrementCycle()
+            _ = bus.read(address: address)
+            ppuStep()
+            enabled = false
+            dmaTransfer(address: address)
+            enabled = true
+        }
+
+        // Every CPU memory read takes a cycle and steps the PPU
+        incrementCycle()
+        let result = bus.read(address: address)
+        ppuStep()
+        return result
     }
 
     func incrementCycle() {
         cycle += 1
+        bus.apu.step()
     }
 
     func ppuStep() {
         bus.ppu.step()
-        if toggleIrqDisabled {
-            toggleIrqDisabled = false
+        if statusRegister.toggleIrqDisable {
+            statusRegister.toggleIrqDisable = false
             statusRegister.irqDisabled = !statusRegister.irqDisabled
         }
         irqDisabled = lastIrqDisabled
@@ -170,16 +184,22 @@ public final class NESCPU: CPU {
         dmcIrq.delayActivating()
     }
 
-    func readPageCross(address: Int, pc: Int) {
-        if currentOperation.hasReadCycle || (address & 0xFF00) != (pc & 0xFF00) {
-            _ = read(pc & 0xFF00 | address & 0xFF)
+    /// Read page cross detection for accurate 6502 timing simulation
+    /// Performs a dummy read when crossing page boundaries or for write operations
+    /// - Parameters:
+    ///   - address: The final effective address
+    ///   - baseAddress: The base address before indexing
+    @inline(__always)
+    func readPageCross(address: Int, baseAddress: Int) {
+        if currentOperation.writeCycles != 0 || (address & 0xFF00) != (baseAddress & 0xFF00) {
+            _ = read(baseAddress & 0xFF00 | address & 0xFF)
         }
     }
 
     func branch(to address: Int) {
         _ = read(programCounter)
         delayInterrupts()
-        readPageCross(address: address, pc: programCounter)
+        readPageCross(address: address, baseAddress: programCounter)
         programCounter = address
     }
 
@@ -194,7 +214,7 @@ public final class NESCPU: CPU {
 
     func popFromStack() -> UInt8 {
         stackPointer = stackPointer &+ 1
-        return read(Int(stackPointer))
+        return read(0x100 | Int(stackPointer))
     }
 
     func cmp(_ reg: UInt8, _ mem: UInt8) {
@@ -218,6 +238,12 @@ public final class NESCPU: CPU {
         dmcIrq = interrupt
         dmcIrq.setCPU(self)
         interrupts.append(dmcIrq)
+    }
+
+    func addMapperIrqInterrupt(_ interrupt: Interrupt) {
+        mapperIrq = interrupt
+        mapperIrq.setCPU(self)
+        interrupts.append(mapperIrq)
     }
 }
 

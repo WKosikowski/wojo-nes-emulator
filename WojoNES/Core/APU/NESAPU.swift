@@ -25,4 +25,9 @@ class NESAPU: APU {
     }
 
     func write(address: Int, value: UInt8) {}
+
+    func step() {
+        // APU stepping logic will be implemented later
+        // For now, this is a placeholder to match NESik's architecture
+    }
 }

@@ -10,6 +10,8 @@ public extension NESCPU {
     /// Implied addressing: Operates on internal CPU state (e.g., registers) or has no operand.
     /// Accumulator addressing: Specifically targets the accumulator (A register).
     func imp() {
+        // Dummy read from program counter (required for accurate cycle timing)
+        _ = read(programCounter)
         // Set address to a fake accumulator address, representing the accumulator register.
         address = NESCPU.fakeAccumulatorAddress
     }
@@ -36,6 +38,8 @@ public extension NESCPU {
         address = Int(read(programCounter))
         // Increment PC by 1, wrapping within 16-bit address space.
         programCounter = (programCounter &+ 1) & 0xFFFF
+        // Dummy read from unindexed zero page address (NES timing requirement)
+        _ = read(address)
         // Add X register to the address, wrapping within zero page (0x00–0xFF).
         address = (address &+ Int(xRegister)) & 0xFF
     }
@@ -46,6 +50,8 @@ public extension NESCPU {
         address = Int(read(programCounter))
         // Increment PC by 1, wrapping within 16-bit address space.
         programCounter = (programCounter &+ 1) & 0xFFFF
+        // Dummy read from unindexed zero page address (NES timing requirement)
+        _ = read(address)
         // Add Y register to the address, wrapping within zero page (0x00–0xFF).
         address = (address &+ Int(yRegister)) & 0xFF
     }
@@ -93,9 +99,11 @@ public extension NESCPU {
         let highByte = read(programCounter)
         // Increment PC by 1.
         programCounter = (programCounter &+ 1) & 0xFFFF
-        // Form the base address (highByte << 8 | lowByte), then add X register.
-        // No wrapping is applied, as the result is a 16-bit address (0x0000–0xFFFF).
-        address = ((Int(highByte) << 8) | Int(lowByte)) + Int(xRegister)
+        // Form the base address and add X register.
+        let baseAddress = (Int(highByte) << 8) | Int(lowByte)
+        address = (baseAddress + Int(xRegister)) & 0xFFFF
+        // Handle page cross dummy read for proper timing
+        readPageCross(address: address, baseAddress: baseAddress)
     }
 
     /// Absolute,Y addressing: Uses a 16-bit address offset by the Y register.
@@ -108,9 +116,11 @@ public extension NESCPU {
         let highByte = read(programCounter)
         // Increment PC by 1.
         programCounter = (programCounter &+ 1) & 0xFFFF
-        // Form the base address (highByte << 8 | lowByte), then add Y register.
-        // No wrapping is applied, as the result is a 16-bit address (0x0000–0xFFFF).
-        address = ((Int(highByte) << 8) | Int(lowByte)) + Int(yRegister)
+        // Form the base address and add Y register.
+        let baseAddress = (Int(highByte) << 8) | Int(lowByte)
+        address = (baseAddress + Int(yRegister)) & 0xFFFF
+        // Handle page cross dummy read for proper timing
+        readPageCross(address: address, baseAddress: baseAddress)
     }
 
     /// Indirect addressing: Used by JMP instruction, fetches a 16-bit address from a memory location specified by a 16-bit pointer.
@@ -142,6 +152,8 @@ public extension NESCPU {
         let zPAddress = read(programCounter)
         // Increment PC by 1.
         programCounter = (programCounter &+ 1) & 0xFFFF
+        // Dummy read from unindexed zero page address (NES timing requirement)
+        _ = read(Int(zPAddress))
         // Add X register to the zero page address, wrapping within zero page (0x00–0xFF).
         let pointer = Int((zPAddress &+ xRegister) & 0xFF)
         // Read the low byte of the target address from the pointer.
@@ -163,7 +175,9 @@ public extension NESCPU {
         // Read the high byte from the next zero page address, wrapping within zero page.
         let highByte = Int(read((zPAddress + 1) & 0xFF))
         // Form the base address (highByte << 8 | lowByte), then add Y register.
-        // No wrapping is applied, as the result is a 16-bit address (0x0000–0xFFFF).
-        address = ((highByte << 8) | lowByte) + Int(yRegister)
+        let baseAddress = (highByte << 8) | lowByte
+        address = (baseAddress + Int(yRegister)) & 0xFFFF
+        // Handle page cross dummy read for proper timing
+        readPageCross(address: address, baseAddress: baseAddress)
     }
 }

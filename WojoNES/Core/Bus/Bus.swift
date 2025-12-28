@@ -18,6 +18,7 @@ protocol Bus: AnyObject {
 
     var controller: [UInt8] { get set }
     var ppu: PPU! { get }
+    var apu: APU! { get }
     var dmaOamAddr: Int { get set }
     var cycle: Int { get }
 }
