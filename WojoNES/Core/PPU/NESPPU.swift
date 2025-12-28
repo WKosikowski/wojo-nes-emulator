@@ -193,7 +193,9 @@ class NESPPU: PPU {
     func read(_ address: Int) -> UInt8 {
         var data = lastBusData
         switch address & 0x7 {
-            case 2: // PPU Status Register (0x2002)
+            case 2:
+                data &= 0x1F
+                // PPU Status Register (0x2002)
                 // Combine the status flags (bits 7-5) with the last bus data
                 data |= UInt8(statusRegister.value & 0xE0)
                 // Clear the vertical blank flag upon read (standard PPU behaviour)
@@ -380,7 +382,7 @@ class NESPPU: PPU {
                 // Index into the current and previous tile based on fine X offset (0-7)
                 let idx = 15 - (i + nextRenderingVramRegister.fineX)
                 let patternTile = idx < 8 ? actTile : prevTile
-                bgPattern = patternTile.getPatternPixel(index: idx)
+                bgPattern = patternTile.getPatternPixel(index: idx & 7)
                 // Only apply palette index if the pixel is non-transparent
                 if bgPattern > 0 {
                     bgPalette = Int(patternTile.attribute)
@@ -445,7 +447,7 @@ class NESPPU: PPU {
             var row = y - sprite.y
 
             // Apply vertical flip if the flip bit is set in the attribute byte
-            if (sprite.attribute & 0x20) != 0 {
+            if (sprite.attribute & 0x80) != 0 {
                 row = controlRegister.spriteSize - 1 - row
             }
 
@@ -453,7 +455,7 @@ class NESPPU: PPU {
             fetchSpritePattern(sprite: &sprite, row: row)
 
             // Apply horizontal flip to both bit planes if the flip bit is set
-            if (sprite.attribute & 0x10) != 0 {
+            if (sprite.attribute & 0x40) != 0 {
                 sprite.lsb = Self.flipByte(sprite.lsb)
                 sprite.msb = Self.flipByte(sprite.msb)
             }
@@ -707,8 +709,8 @@ class NESPPU: PPU {
         // Handle 8×16 sprites: sprite ID selects the pattern table and split tile selection
         if controlRegister.spriteSize == 16 {
             // For 8×16 sprites, the sprite ID register determines the pattern table directly
-            tableNo = sprite.id
-            tileId = sprite.id
+            tableNo = sprite.id & 1
+            tileId = sprite.id & 0xFE
             // If the row is in the bottom half, fetch the next tile
             if tileRow > 7 {
                 tileId += 1
