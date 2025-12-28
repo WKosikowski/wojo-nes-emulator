@@ -491,13 +491,19 @@ class NESPPU: PPU {
         for i in stride(from: 0, to: oam.count, by: 4) {
             var sprite = PixelRow()
 
+            // Extract sprite attributes from OAM bytes: Y position, tile ID, attributes, X position
+            sprite.y = Int(oam[i])
+
+            // Skip sprites that are off-screen (Y >= 240 means sprite is completely below visible area)
+            if sprite.y >= 240 {
+                continue
+            }
+
             // Mark the first sprite in OAM as sprite zero (required for collision detection)
             if i == 0 {
                 sprite.isSpriteZero = true
             }
 
-            // Extract sprite attributes from OAM bytes: Y position, tile ID, attributes, X position
-            sprite.y = Int(oam[i])
             sprite.id = Int(oam[i + 1])
             sprite.attribute = Int(oam[i + 2])
             sprite.x = Int(oam[i + 3])
@@ -547,6 +553,7 @@ class NESPPU: PPU {
                     }
                     readNextTile()
                 }
+                // Always draw tile line to ensure frame buffer is filled
                 drawTileLine(y: y, x: x)
                 self.x += 8
 
