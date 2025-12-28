@@ -45,12 +45,10 @@ class NESEmulator: Emulator {
         let nmi = Interrupt()
         let apuIrq = Interrupt()
         let dmcIrq = Interrupt()
-        let mapperIrq = Interrupt()
 
         cpu.addNmiInterrupt(nmi)
         cpu.addApuIrqInterrupt(apuIrq)
         cpu.addDmcIrqInterrupt(dmcIrq)
-        cpu.addMapperIrqInterrupt(mapperIrq)
 
         ppu.addNmiInterrupt(nmi)
 
@@ -87,12 +85,12 @@ class NESEmulator: Emulator {
     }
 
     func step() {
-        //print("step nes")
+        // print("step nes")
         bus.step()
     }
 
     func getFrame() -> PixelMatrix {
-        //print("get frame")
-        return ppu.getFrame()
+        // print("get frame")
+        ppu.getFrame()
     }
 }
