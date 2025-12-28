@@ -43,6 +43,22 @@ class NESViewModel: ObservableObject {
         nes?.mapController(controller)
     }
 
+    /// Sets a key binding for a specific NES controller button.
+    /// This method updates the emulator's NES controller with the new key mapping.
+    /// - Parameters:
+    ///   - button: The NES button to bind (e.g., .a, .b, .up, .down)
+    ///   - key: The keyboard key string to bind to the button
+    func setControllerKeyBinding(button: NESButton, key: String) {
+        nes?.setControllerKeyBinding(button: button, key: key)
+    }
+
+    /// Retrieves the current key binding for a specific NES controller button.
+    /// - Parameter button: The NES button to query
+    /// - Returns: The keyboard key string bound to the button, or a placeholder if not configured
+    func getControllerKeyBinding(button: NESButton) -> String {
+        nes?.getControllerKeyBinding(button: button) ?? "Not Set"
+    }
+
     func resume() {
         guard let displayLink else { return }
         print("resume")
