@@ -12,6 +12,8 @@ import SwiftUI
 struct ControllerConfigView: View {
     // MARK: SwiftUI Properties
 
+    @State private var folderPath: String = ""
+
     @EnvironmentObject var viewModel: NESViewModel
 
     @State private var selectedButton: NESButton?
@@ -117,6 +119,21 @@ struct ControllerConfigView: View {
         }
         .padding()
         .frame(minWidth: 1000, minHeight: 500)
+
+        VStack(alignment: .leading) {
+            Text("Screenshot Destination Folder Path")
+            HStack(spacing: 12) {
+                TextField("Enter folder path…", text: $folderPath)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(minWidth: 400)
+                    .disabled(true)
+
+                Button("Browse…") {
+                    openFolderPicker()
+                }
+            }
+        }
+        .padding()
     }
 
     // MARK: Functions
@@ -124,5 +141,19 @@ struct ControllerConfigView: View {
     private func selectButton(_ button: NESButton) {
         selectedButton = button
         isCapturingKey = true
+    }
+
+    private func openFolderPicker() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Select Folder"
+
+        if panel.runModal() == .OK {
+            if let url = panel.url {
+                folderPath = url.path
+            }
+        }
     }
 }
