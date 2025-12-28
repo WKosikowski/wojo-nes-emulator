@@ -28,24 +28,24 @@ public extension NESCPU {
         result += (statusRegister.carry == true) ? 1 : 0
         statusRegister.carry = !(result < 0)
         statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
-        accumulator = UInt8(result & 0xFF)  // Mask to 8 bits to prevent overflow
+        accumulator = UInt8(result & 0xFF) // Mask to 8 bits to prevent overflow
     }
 
     /// Increment memory
     func inc() {
         var value = read(address)
-        write(address, value)  // Dummy write during RMW operation
+        write(address, value) // Dummy write during RMW operation
         value = value &+ 1
-        write(address, value)  // Final write
+        write(address, value) // Final write
         resultRegister = value // to set zero and negative flags
     }
 
     /// Decrement memory
     func dec() {
         var value = read(address)
-        write(address, value)  // Dummy write during RMW operation
+        write(address, value) // Dummy write during RMW operation
         value = value &- 1
-        write(address, value)  // Final write
+        write(address, value) // Final write
         resultRegister = value // to set zero and negative flags
     }
 
@@ -96,10 +96,10 @@ public extension NESCPU {
         } else {
             // Memory mode with intermediate write
             var value = read(address)
-            write(address, value)  // Dummy write during RMW
+            write(address, value) // Dummy write during RMW
             statusRegister.carry = value & 0b1000_0000 != 0
             value <<= 1
-            write(address, value)  // Final write
+            write(address, value) // Final write
             resultRegister = value
         }
     }
@@ -114,10 +114,10 @@ public extension NESCPU {
         } else {
             // Memory mode with intermediate write
             var value = read(address)
-            write(address, value)  // Dummy write during RMW
+            write(address, value) // Dummy write during RMW
             statusRegister.carry = value & 0b0000_0001 != 0
             value >>= 1
-            write(address, value)  // Final write
+            write(address, value) // Final write
             resultRegister = value
         }
     }
@@ -136,14 +136,14 @@ public extension NESCPU {
         } else {
             // Memory mode with intermediate write
             var value = read(address)
-            write(address, value)  // Dummy write during RMW
+            write(address, value) // Dummy write during RMW
             let oldCarry = statusRegister.carry
             statusRegister.carry = value & 0b1000_0000 != 0
             value <<= 1
             if oldCarry {
                 value |= 0b0000_0001
             }
-            write(address, value)  // Final write
+            write(address, value) // Final write
             resultRegister = value
         }
     }
@@ -162,14 +162,14 @@ public extension NESCPU {
         } else {
             // Memory mode with intermediate write
             var value = read(address)
-            write(address, value)  // Dummy write during RMW
+            write(address, value) // Dummy write during RMW
             let oldCarry = statusRegister.carry
             statusRegister.carry = value & 0b0000_0001 != 0
             value >>= 1
             if oldCarry {
                 value |= 0b1000_0000
             }
-            write(address, value)  // Final write
+            write(address, value) // Final write
             resultRegister = value
         }
     }
@@ -269,7 +269,7 @@ public extension NESCPU {
         // Dummy read from stack before popping (required for accurate cycle timing)
         _ = read(0x100 | Int(stackPointer))
         statusRegister.value = UInt8(popStack())
-        statusRegister.break = false  // Clear break flag after pulling status
+        statusRegister.break = false // Clear break flag after pulling status
         programCounter = popStack()
         programCounter |= popStack() << 8
     }
@@ -352,7 +352,7 @@ public extension NESCPU {
             stackPointer = stackPointer &- 2
             _ = popStack()
             stackPointer = stackPointer &- 2
-            vectorAddress = 0xFFFC  // Reset vector
+            vectorAddress = 0xFFFC // Reset vector
         } else {
             // Normal BRK/IRQ: push PC and status to stack
             pushStack(programCounter >> 8)
@@ -361,9 +361,9 @@ public extension NESCPU {
 
             if nmi.isActive {
                 nmi.acknowledge()
-                vectorAddress = 0xFFFA  // NMI vector
+                vectorAddress = 0xFFFA // NMI vector
             } else {
-                vectorAddress = 0xFFFE  // IRQ/BRK vector
+                vectorAddress = 0xFFFE // IRQ/BRK vector
             }
         }
 
@@ -407,7 +407,7 @@ public extension NESCPU {
         statusRegister.value = UInt8(popStack())
         if statusRegister.irqDisabled != oldIrqDisabled {
             statusRegister.irqDisabled = oldIrqDisabled
-            statusRegister.toggleIrqDisable = true
+            toggleIrqDisabled = true
         }
     }
 
@@ -426,7 +426,7 @@ public extension NESCPU {
     /// Clear interrupt disable
     func cli() {
         if statusRegister.irqDisabled {
-            statusRegister.toggleIrqDisable = true
+            toggleIrqDisabled = true
         }
     }
 
@@ -448,7 +448,7 @@ public extension NESCPU {
     /// Set interrupt disable
     func sei() {
         if !statusRegister.irqDisabled {
-            statusRegister.toggleIrqDisable = true
+            toggleIrqDisabled = true
         }
     }
 
@@ -473,8 +473,8 @@ public extension NESCPU {
     func bit() {
         let value = read(address)
         statusRegister.zero = (value & accumulator) == 0
-        statusRegister.overflow = (value & 0b0100_0000) != 0  // Bit 6 -> V flag
-        statusRegister.negative = (value & 0b1000_0000) != 0  // Bit 7 -> N flag
+        statusRegister.overflow = (value & 0b0100_0000) != 0 // Bit 6 -> V flag
+        statusRegister.negative = (value & 0b1000_0000) != 0 // Bit 7 -> N flag
     }
 
     // MARK: - Undocumented/Illegal Instructions
@@ -488,16 +488,17 @@ public extension NESCPU {
     func top() {
         _ = read(address)
     }
+
     /// slo – ASL + ORA
     /// Shifts memory left (ASL), then ORAs it with A.
     /// Affects flags: N, Z, C.
     /// Syntax: A = A | (M << 1)
     func slo() {
         var memVal = read(address)
-        write(address, memVal)  // Dummy write
+        write(address, memVal) // Dummy write
         statusRegister.carry = memVal & 0b1000_0000 != 0
         memVal <<= 1
-        write(address, memVal)  // Final write
+        write(address, memVal) // Final write
         accumulator |= memVal
         resultRegister = accumulator
     }
@@ -508,14 +509,14 @@ public extension NESCPU {
     /// Syntax: A = A & (ROL(M))
     func rla() {
         var memVal = read(address)
-        write(address, memVal)  // Dummy write
+        write(address, memVal) // Dummy write
         let oldCarry = statusRegister.carry
         statusRegister.carry = memVal & 0b1000_0000 != 0
         memVal <<= 1
         if oldCarry {
             memVal |= 0b0000_0001
         }
-        write(address, memVal)  // Final write
+        write(address, memVal) // Final write
         accumulator &= memVal
         resultRegister = accumulator
     }
@@ -526,10 +527,10 @@ public extension NESCPU {
     /// Syntax: A = A ^ (M >> 1)
     func sre() {
         var memVal = read(address)
-        write(address, memVal)  // Dummy write
+        write(address, memVal) // Dummy write
         statusRegister.carry = memVal & 0b0000_0001 != 0
         memVal >>= 1
-        write(address, memVal)  // Final write
+        write(address, memVal) // Final write
         accumulator ^= memVal
         resultRegister = accumulator
     }
@@ -540,14 +541,14 @@ public extension NESCPU {
     /// Syntax: A = A + (ROR(M)) + C
     func rra() {
         var memVal = read(address)
-        write(address, memVal)  // Dummy write
+        write(address, memVal) // Dummy write
         let oldCarry = statusRegister.carry
         statusRegister.carry = memVal & 0b0000_0001 != 0
         memVal >>= 1
         if oldCarry {
             memVal |= 0b1000_0000
         }
-        write(address, memVal)  // Final write
+        write(address, memVal) // Final write
 
         // Now perform ADC with the result
         let intAccumulator = Int(accumulator)
@@ -627,9 +628,9 @@ public extension NESCPU {
     /// Syntax: M -= 1, then CMP M
     func dcp() {
         var val = read(address)
-        write(address, val)  // Dummy write during RMW
+        write(address, val) // Dummy write during RMW
         val = val &- 1
-        write(address, val)  // Final write
+        write(address, val) // Final write
         cmp(accumulator, val)
         resultRegister = val
     }
@@ -639,12 +640,12 @@ public extension NESCPU {
     /// Syntax: M += 1, then A = A - M - (1 - C)
     func isc() {
         var val = read(address)
-        write(address, val)  // Dummy write during RMW
+        write(address, val) // Dummy write during RMW
         val = val &+ 1
-        write(address, val)  // Final write
+        write(address, val) // Final write
 
         // Perform SBC with the incremented value
-        let memVal = Int(~val)  // Invert for SBC
+        let memVal = Int(~val) // Invert for SBC
         let intAccumulator = Int(accumulator)
         var result = intAccumulator + memVal
         result += statusRegister.carry ? 1 : 0

@@ -119,7 +119,7 @@ public final class NESCPU: CPU {
         }
 
         // Handle DMA transfers if pending
-        if enabled && (dmaOamEnabled || dmaDmcEnabled) {
+        if enabled, dmaOamEnabled || dmaDmcEnabled {
             incrementCycle()
             _ = bus.read(address: address)
             ppuStep()
@@ -142,8 +142,8 @@ public final class NESCPU: CPU {
 
     func ppuStep() {
         bus.ppu.step()
-        if statusRegister.toggleIrqDisable {
-            statusRegister.toggleIrqDisable = false
+        if toggleIrqDisabled {
+            toggleIrqDisabled = false
             statusRegister.irqDisabled = !statusRegister.irqDisabled
         }
         irqDisabled = lastIrqDisabled
@@ -191,7 +191,7 @@ public final class NESCPU: CPU {
     ///   - baseAddress: The base address before indexing
     @inline(__always)
     func readPageCross(address: Int, baseAddress: Int) {
-        if currentOperation.writeCycles != 0 || (address & 0xFF00) != (baseAddress & 0xFF00) {
+        if currentOperation.hasReadCycle || (address & 0xFF00) != (baseAddress & 0xFF00) {
             _ = read(baseAddress & 0xFF00 | address & 0xFF)
         }
     }
@@ -238,12 +238,6 @@ public final class NESCPU: CPU {
         dmcIrq = interrupt
         dmcIrq.setCPU(self)
         interrupts.append(dmcIrq)
-    }
-
-    func addMapperIrqInterrupt(_ interrupt: Interrupt) {
-        mapperIrq = interrupt
-        mapperIrq.setCPU(self)
-        interrupts.append(mapperIrq)
     }
 }
 

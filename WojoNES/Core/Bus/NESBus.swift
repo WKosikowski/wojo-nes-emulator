@@ -160,7 +160,7 @@ class NESBus: Bus {
         while !ppu.frameComplete {
             cpu.step()
         }
-        //print("frame complete")
+        // print("frame complete")
     }
 
     func resetCycles() {
