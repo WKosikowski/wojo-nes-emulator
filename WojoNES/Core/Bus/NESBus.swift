@@ -163,6 +163,16 @@ class NESBus: Bus {
         // print("frame complete")
     }
 
+    /// Step the PPU by one cycle
+    func stepPPU() {
+        ppu.step()
+    }
+
+    /// Step the APU by one cycle
+    func stepAPU() {
+        apu.step()
+    }
+
     func resetCycles() {
         cpu.resetCycles()
     }

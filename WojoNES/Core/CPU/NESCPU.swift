@@ -137,11 +137,11 @@ public final class NESCPU: CPU {
 
     func incrementCycle() {
         cycle += 1
-        bus.apu.step()
+        bus.stepAPU()
     }
 
     func ppuStep() {
-        bus.ppu.step()
+        bus.stepPPU()
         if toggleIrqDisabled {
             toggleIrqDisabled = false
             statusRegister.irqDisabled = !statusRegister.irqDisabled

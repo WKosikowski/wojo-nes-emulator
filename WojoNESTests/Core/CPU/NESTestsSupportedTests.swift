@@ -28,7 +28,8 @@ struct NESTestsSupportedTests {
         let cpu = NESCPU()
         let bus = NESBus()
         let ppu = NESPPU(cartridge: cartridge)
-
+        let apu = NESAPU()
+        
         let nmi = Interrupt()
         let dmcIrq = Interrupt()
         let apuIrq = Interrupt()
@@ -42,6 +43,7 @@ struct NESTestsSupportedTests {
         bus.connect(cartridge)
         bus.connect(cpu)
         bus.connect(ppu)
+        bus.connect(apu)
 
         ppu.addNmiInterrupt(nmi)
 

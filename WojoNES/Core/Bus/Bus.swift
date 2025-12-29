@@ -14,6 +14,8 @@ protocol Bus: AnyObject {
     func connect(_ cartridge: Cartridge)
     func swapNameTable(bankIdx: Int, swapBankIdx: Int)
     func step()
+    func stepPPU()
+    func stepAPU()
     func resetCycles()
 
     var controller: [UInt8] { get set }

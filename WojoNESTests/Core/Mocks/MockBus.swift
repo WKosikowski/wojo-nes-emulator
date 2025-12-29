@@ -49,7 +49,17 @@ class MockBus: Bus {
         ppu.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
-    func step() {}
+    func step() {
+        // Prevent infinite loops by not doing anything
+    }
+
+    func stepPPU() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
+
+    func stepAPU() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
 
     func resetCycles() {
         cpu.resetCycles()

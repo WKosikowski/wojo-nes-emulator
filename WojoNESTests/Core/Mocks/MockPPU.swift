@@ -34,7 +34,9 @@ class MockPPU: PPU {
         nameTables.swap(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
-    func step() {}
+    func step() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
 
     func read(_ address: Int) -> UInt8 {
         0
