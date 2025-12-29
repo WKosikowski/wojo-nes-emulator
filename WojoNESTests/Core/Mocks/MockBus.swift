@@ -33,11 +33,7 @@ class MockBus: Bus {
     // MARK: Functions
 
     func read(address: Int) -> UInt8 {
-        if let data = ram[address] {
-            return data
-        } else {
-            fatalError("nothing was written to memory at  \(String(format: "%02x", 12))")
-        }
+        ram[address] ?? 0
     }
 
     func write(address: Int, data: UInt8) {
