@@ -249,7 +249,6 @@ extension NESCPU {
         if irqActive { opcode = 0 }
         statusRegister.break = !irqActive
         currentOperation = operations[Int(opcode)]
-//        print(operation.name)
         switch currentOperation.addressingMode {
             case .implied:
                 imp()
@@ -483,8 +482,4 @@ extension NESCPU {
     func isReadingCycle() -> Bool {
         ((cycle + additionalCycle) & 1) == 0
     }
-
-    func handleIRQ() {}
-
-    func handleNMI() {}
 }
