@@ -22,13 +22,13 @@ public extension NESCPU {
     /// Subtract memory from accumulator with borrow
     /// https://www.nesdev.org/wiki/Instruction_reference#SBC
     func sbc() {
-        let memVal = Int(~read(address))
+        let memVal = Int(~read(address) & 0xFF)
         let intAccumulator = Int(accumulator)
         var result = intAccumulator + memVal
         result += (statusRegister.carry == true) ? 1 : 0
-        statusRegister.carry = !(result < 0)
+        statusRegister.carry = result > 0xFF  // carry set if no borrow needed
         statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
-        accumulator = UInt8(result & 0xFF) // Mask to 8 bits to prevent overflow
+        accumulator = UInt8(result & 0xFF)
     }
 
     /// Increment memory
@@ -632,7 +632,7 @@ public extension NESCPU {
         val = val &- 1
         write(address, val) // Final write
         cmp(accumulator, val)
-        resultRegister = val
+        // Note: cmp already sets resultRegister to A - val for correct Z/N flags
     }
 
     /// isc – INC + SBC
@@ -645,11 +645,11 @@ public extension NESCPU {
         write(address, val) // Final write
 
         // Perform SBC with the incremented value
-        let memVal = Int(~val) // Invert for SBC
+        let memVal = Int(~val & 0xFF) // Invert for SBC (mask to 8 bits like SBC)
         let intAccumulator = Int(accumulator)
         var result = intAccumulator + memVal
         result += statusRegister.carry ? 1 : 0
-        statusRegister.carry = !(result < 0)
+        statusRegister.carry = result > 0xFF  // carry set if no borrow needed
         statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
         accumulator = UInt8(result & 0xFF)
     }
