@@ -11,8 +11,11 @@ protocol Cartridge: AnyObject {
     func reset()
     func swapNameTable(bankIdx: Int, swapBankIdx: Int)
 
+    var bus: Bus! { get set }
     var mapper: Mapper { get }
     var chrMemory: BankMemory { get }
     var prgMemory: BankMemory { get }
     var wRam: [UInt8] { get set }
+    var tvSystem: TVSystem { get }
+    var mirroring: Header.Mirroring { get }
 }

@@ -11,6 +11,8 @@ class MockPPU: PPU {
 
     var frameBuffer: [UInt32] = []
 
+    var nmi: Interrupt!
+
     var frame: PixelMatrix = .init(width: 256, height: 240)
 
     var nameTables: BankMemory = {
@@ -32,7 +34,9 @@ class MockPPU: PPU {
         nameTables.swap(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
-    func step() {}
+    func step() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
 
     func read(_ address: Int) -> UInt8 {
         0
@@ -44,5 +48,9 @@ class MockPPU: PPU {
 
     func getFrame() -> PixelMatrix {
         frame
+    }
+
+    func addNmiInterrupt(_ interrupt: WojoNES.Interrupt) {
+        nmi = interrupt
     }
 }

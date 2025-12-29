@@ -13,14 +13,16 @@ struct Operation {
     let addressingMode: AddressingMode
     let instruction: Instruction
     let cycles: Int
+    let hasReadCycle: Bool
 
     // MARK: Lifecycle
 
-    init(_ opCode: UInt8, _ name: String, _ addressingMode: AddressingMode, _ instruction: Instruction, _ cycles: Int) {
+    init(_ opCode: UInt8, _ name: String, _ addressingMode: AddressingMode, _ instruction: Instruction, _ cycles: Int, _ hasReadCycle: Bool = false) {
         self.opCode = opCode
         self.name = name
         self.addressingMode = addressingMode
         self.instruction = instruction
         self.cycles = cycles
+        self.hasReadCycle = hasReadCycle
     }
 }

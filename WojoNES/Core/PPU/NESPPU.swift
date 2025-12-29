@@ -79,6 +79,18 @@ class NESPPU: PPU {
     var mask: MaskRegister = .init()
     var statusRegister: PPUStatusRegister = .init()
 
+    var nextCycle: Float = 0
+    var additionalCycles: Int = 2
+    var clockRatio: Float = 3
+    let cyclesCountPerFrame: Int
+
+    // MARK: - Interrupts
+
+    var nmi: Interrupt!
+
+    /// Debug helper: prints CHR memory and nametable state once
+    private var debugPrinted = false
+
     // MARK: Computed Properties
 
     var vramData: UInt8 {
@@ -127,8 +139,12 @@ class NESPPU: PPU {
         self.cartridge = cartridge
         model = cartridge.getModel()
 
+        clockRatio = model.ppuClockRatio
+
         maxX = model.ppuMaxX
         maxY = model.ppuMaxY
+
+        cyclesCountPerFrame = (maxX + 2) * (maxY + 2)
 
         for i in 0 ..< 32 {
             paletteIndices[i] = 0
@@ -163,12 +179,14 @@ class NESPPU: PPU {
         self.bus = bus
     }
 
-    func frameReady() -> Bool {
-        false
+    func addNmiInterrupt(_ interrupt: Interrupt) {
+        nmi = interrupt
     }
 
     func step() {
-        frameStep()
+        while Int(nextCycle) <= bus.cycle {
+            frameStep()
+        }
     }
 
     /// Reads a value from the specified PPU register address.
@@ -179,7 +197,8 @@ class NESPPU: PPU {
         var data = lastBusData
         switch address & 0x7 {
             case 2: // PPU Status Register (0x2002)
-                // Combine the status flags (bits 7-5) with the last bus data
+                // Clear upper 3 bits of open bus, then combine with status flags (bits 7-5)
+                data &= 0x1F
                 data |= UInt8(statusRegister.value & 0xE0)
                 // Clear the vertical blank flag upon read (standard PPU behaviour)
                 statusRegister.verticalBlank = false
@@ -246,6 +265,9 @@ class NESPPU: PPU {
                 nextRenderingVramRegister.nameTableY = controlRegister.nameTableY
                 // Note: NMI edge detection would occur here; CPU would respond during next cycle
                 let suppressNMI = y == -1 && x == 0
+                if !prevNMI, controlRegister.enableNMI, statusRegister.verticalBlank, !suppressNMI {
+                    nmi.start(delay: 2)
+                }
 
             case 1: // PPU Mask Register (0x2001)
                 // Update rendering flags: background/sprite visibility and colour emphasis
@@ -281,11 +303,112 @@ class NESPPU: PPU {
         }
     }
 
+    func debugPrintState() {
+        guard !debugPrinted, y == 0, x == 8 else { return }
+        debugPrinted = true
+
+        print("DEBUG: ========== PPU STATE DUMP ==========")
+
+        // Check rendering flags
+        print("DEBUG: renderBackground=\(mask.renderBackground), renderSprites=\(mask.renderSprites)")
+        print("DEBUG: patternBg=\(controlRegister.patternBg), patternSprite=\(controlRegister.patternSprite)")
+        print("DEBUG: fineX=\(currentRenderingVramRegister.fineX), fineY=\(currentRenderingVramRegister.fineY)")
+        print("DEBUG: coarseX=\(currentRenderingVramRegister.coarseX), coarseY=\(currentRenderingVramRegister.coarseY)")
+        print("DEBUG: nameTableX=\(currentRenderingVramRegister.nameTableX), nameTableY=\(currentRenderingVramRegister.nameTableY)")
+
+        // Check CHR memory bank structure
+        print("DEBUG: CHR bankSize=\(cartridge.chrMemory.bankSizeValue), numBanks=\(cartridge.chrMemory.banks.count), swapBanks=\(cartridge.chrMemory.swapBanks.count)")
+        for (i, bank) in cartridge.chrMemory.banks.enumerated() {
+            let nonZero = bank.filter { $0 != 0 }.count
+            print("DEBUG: CHR bank[\(i)] size=\(bank.count), nonZero=\(nonZero)")
+        }
+
+        // Check nametable structure
+        print("DEBUG: NT bankSize=\(nameTables.bankSizeValue), numBanks=\(nameTables.banks.count)")
+        for (i, bank) in nameTables.banks.enumerated() {
+            let nonZero = bank.filter { $0 != 0 }.count
+            print("DEBUG: NT bank[\(i)] nonZero=\(nonZero)")
+        }
+
+        // Check first 8 tiles from nametable 0
+        print("DEBUG: First 8 nametable entries: ", terminator: "")
+        let ntIdx = currentRenderingVramRegister.nameTableY << 1 | currentRenderingVramRegister.nameTableX
+        let ntBank = nameTables.banks[ntIdx]
+        for i in 0 ..< 8 {
+            print("\(ntBank[i]) ", terminator: "")
+        }
+        print("")
+
+        // For each of first 8 tiles, show the pattern data
+        let patternBase = controlRegister.patternBg << 12 // 0x0000 or 0x1000
+        print("DEBUG: patternBase = 0x\(String(patternBase, radix: 16))")
+
+        // Get first tile directly
+        let tile0Id = Int(ntBank[0])
+        let tile0Addr = patternBase + (tile0Id << 4)
+        print("DEBUG: Tile 0: id=\(tile0Id), addr=0x\(String(tile0Addr, radix: 16))")
+
+        // Access CHR memory directly via banks array
+        let chrBankIdx = tile0Addr / cartridge.chrMemory.bankSizeValue
+        let chrOffset = tile0Addr % cartridge.chrMemory.bankSizeValue
+        print("DEBUG: CHR access: bankIdx=\(chrBankIdx), offset=\(chrOffset)")
+
+        if chrBankIdx < cartridge.chrMemory.banks.count {
+            let bank = cartridge.chrMemory.banks[chrBankIdx]
+            print("DEBUG: Bank size=\(bank.count)")
+            if chrOffset < bank.count {
+                let lsb = bank[chrOffset]
+                let msb = bank[chrOffset + 8]
+                print("DEBUG: Direct bank access: lsb=\(lsb), msb=\(msb)")
+            }
+        }
+
+        // Also try via subscript
+        let subLsb = cartridge.chrMemory[tile0Addr]
+        let subMsb = cartridge.chrMemory[tile0Addr + 8]
+        print("DEBUG: Subscript access: lsb=\(subLsb), msb=\(subMsb)")
+
+        // Print first 16 bytes of bank 1 directly
+        if cartridge.chrMemory.banks.count > 1 {
+            let bank1 = cartridge.chrMemory.banks[1]
+            var hexStr = "DEBUG: Bank1 first 16 bytes: "
+            for i in 0 ..< min(16, bank1.count) {
+                hexStr += String(format: "%02X ", bank1[i])
+            }
+            print(hexStr)
+        }
+
+        // Find a tile in nametable that is NOT 36 and check its pattern
+        print("DEBUG: Searching for non-36 tile...")
+        var foundNonBlank = false
+        for offset in 0 ..< min(960, ntBank.count) {
+            let tileId = Int(ntBank[offset])
+            if tileId != 36, tileId != 0 {
+                let row = offset / 32
+                let col = offset % 32
+                let addr = patternBase + (tileId << 4)
+                let lsb = cartridge.chrMemory[addr]
+                let msb = cartridge.chrMemory[addr + 8]
+                print("DEBUG: Found tile at (\(col),\(row)): id=\(tileId), addr=0x\(String(addr, radix: 16)), lsb=\(lsb), msb=\(msb)")
+                foundNonBlank = true
+                break
+            }
+        }
+        if !foundNonBlank {
+            print("DEBUG: All tiles in nametable are 36 or 0!")
+        }
+
+        // Check palette
+        print("DEBUG: Palette indices [0-7]: \(paletteIndices[0 ..< 8].map { $0 })")
+        print("DEBUG: ========================================")
+    }
+
     /// Fetches and buffers the next background tile from the nametable.
     /// Rotates tiles through the pipeline: buffer -> prev -> actual -> next.
     /// This method is called every 8 pixels to supply the rendering pipeline with fresh tile data
     /// including the colour information and pattern data (bit planes).
     func readNextTile() { // 2.4%
+        debugPrintState()
         // Rotate tiles through the pipeline for smooth 8-pixel boundary rendering
         bufferTile = prevTile
         prevTile = actTile
@@ -362,7 +485,7 @@ class NESPPU: PPU {
                 // Index into the current and previous tile based on fine X offset (0-7)
                 let idx = 15 - (i + nextRenderingVramRegister.fineX)
                 let patternTile = idx < 8 ? actTile : prevTile
-                bgPattern = patternTile.getPatternPixel(index: idx)
+                bgPattern = patternTile.getPatternPixel(index: idx & 7)
                 // Only apply palette index if the pixel is non-transparent
                 if bgPattern > 0 {
                     bgPalette = Int(patternTile.attribute)
@@ -427,15 +550,15 @@ class NESPPU: PPU {
             var row = y - sprite.y
 
             // Apply vertical flip if the flip bit is set in the attribute byte
-            if (sprite.attribute & 0x20) != 0 {
+            if (sprite.attribute & 0x80) != 0 {
                 row = controlRegister.spriteSize - 1 - row
             }
 
             // Load pattern data for this sprite row from CHR memory
             fetchSpritePattern(sprite: &sprite, row: row)
 
-            // Apply horizontal flip to both bit planes if the flip bit is set
-            if (sprite.attribute & 0x10) != 0 {
+            // Apply horizontal flip to both bit planes if the flip bit is set (bit 6)
+            if (sprite.attribute & 0x40) != 0 {
                 sprite.lsb = Self.flipByte(sprite.lsb)
                 sprite.msb = Self.flipByte(sprite.msb)
             }
@@ -473,13 +596,19 @@ class NESPPU: PPU {
         for i in stride(from: 0, to: oam.count, by: 4) {
             var sprite = PixelRow()
 
+            // Extract sprite attributes from OAM bytes: Y position, tile ID, attributes, X position
+            sprite.y = Int(oam[i])
+
+            // Skip sprites that are off-screen (Y >= 240 means sprite is completely below visible area)
+            if sprite.y >= 240 {
+                continue
+            }
+
             // Mark the first sprite in OAM as sprite zero (required for collision detection)
             if i == 0 {
                 sprite.isSpriteZero = true
             }
 
-            // Extract sprite attributes from OAM bytes: Y position, tile ID, attributes, X position
-            sprite.y = Int(oam[i])
             sprite.id = Int(oam[i + 1])
             sprite.attribute = Int(oam[i + 2])
             sprite.x = Int(oam[i + 3])
@@ -529,6 +658,7 @@ class NESPPU: PPU {
                     }
                     readNextTile()
                 }
+                // Always draw tile line to ensure frame buffer is filled
                 drawTileLine(y: y, x: x)
                 self.x += 8
 
@@ -605,6 +735,9 @@ class NESPPU: PPU {
             // End of pre-render scanline: transition to the next frame. This marks the
             // completion of one full PPU frame (including vertical blank period).
             case (-1, 337):
+                if cartridge.tvSystem == .ntsc, renderEnabled, oddFrame {
+                    additionalCycles -= 1
+                }
                 y = 0
                 x = 0
 
@@ -630,7 +763,9 @@ class NESPPU: PPU {
             // NMI trigger point (y == screen.height + 1, x == 2): Would normally trigger
             // the non-maskable interrupt if enabled. This cycle is where the 6502 responds.
             case (frame.height + 1, 2):
-                // TODO: Add NMI triggering
+                if controlRegister.enableNMI, !preventVBL {
+                    nmi.start(delay: 1)
+                }
                 y = maxY + 1
                 x = -1
 
@@ -644,9 +779,10 @@ class NESPPU: PPU {
             case let (y, _) where y > maxY:
                 // Mark the frame as complete so the emulator can present the screen buffer.
                 frameComplete = true
-                // TODO: add cycles handling
+                additionalCycles = (cyclesCountPerFrame + additionalCycles) % 3
                 // Toggle the odd frame flag: on odd frames, one cycle is skipped for NTSC timing.
                 oddFrame.toggle()
+                bus.resetCycles()
                 // Reset scanline counter and pixel counter for the next frame.
                 self.y = -1
                 x = 0
@@ -657,6 +793,8 @@ class NESPPU: PPU {
                 y += 1
                 x = 0
         }
+
+        nextCycle = Float((maxX + 2) * (y + 1) + x + 1 + additionalCycles) / clockRatio
     }
 
     /// Fetches sprite pattern data for a specific sprite row during scanline rendering.
@@ -674,8 +812,8 @@ class NESPPU: PPU {
         // Handle 8×16 sprites: sprite ID selects the pattern table and split tile selection
         if controlRegister.spriteSize == 16 {
             // For 8×16 sprites, the sprite ID register determines the pattern table directly
-            tableNo = sprite.id
-            tileId = sprite.id
+            tableNo = sprite.id & 1
+            tileId = sprite.id & 0xFE
             // If the row is in the bottom half, fetch the next tile
             if tileRow > 7 {
                 tileId += 1

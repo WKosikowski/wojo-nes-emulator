@@ -55,9 +55,6 @@ struct NESView: View {
             // Debug Info
             VStack(alignment: .leading) {
                 Text("FPS: \(viewModel.fps)")
-                Text("CPU Cycles: \(viewModel.cpuCycles)")
-                Text("PPU Scanline: \(viewModel.scanline)")
-                Text("PPU Cycle: \(viewModel.cycle)")
             }
             .padding()
 

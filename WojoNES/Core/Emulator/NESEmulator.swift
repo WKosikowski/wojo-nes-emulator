@@ -38,6 +38,30 @@ class NESEmulator: Emulator {
         cpu.connect(bus)
         apu.connect(bus)
         ppu.connect(bus)
+
+        // Set bus reference in cartridge (required for nametable mirroring)
+        cartridge.bus = bus
+
+        let nmi = Interrupt()
+        let apuIrq = Interrupt()
+        let dmcIrq = Interrupt()
+
+        cpu.addNmiInterrupt(nmi)
+        cpu.addApuIrqInterrupt(apuIrq)
+        cpu.addDmcIrqInterrupt(dmcIrq)
+
+        ppu.addNmiInterrupt(nmi)
+
+        // Re-apply mirroring now that bus is connected
+        // (mirroring was set during cartridge init when bus was nil)
+        let currentMirroring = cartridge.mapper.mirroring
+        cartridge.mapper.mirroring = currentMirroring
+
+        // Initialize the mapper (sets up proper bank mappings)
+        cartridge.mapper.reset()
+
+        // Initialize the CPU (reads reset vector and starts execution)
+        cpu.resetProgram()
     }
 
     // MARK: Functions
@@ -61,12 +85,12 @@ class NESEmulator: Emulator {
     }
 
     func step() {
-        print("step nes")
+        // print("step nes")
         bus.step()
     }
 
     func getFrame() -> PixelMatrix {
-        print("get frame")
-        return ppu.getFrame()
+        // print("get frame")
+        ppu.getFrame()
     }
 }

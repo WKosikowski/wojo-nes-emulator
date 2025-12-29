@@ -18,4 +18,7 @@ class MockAPU: APU {
     func write(address: Int, value: UInt8) {}
 
     func connect(_ bus: any Bus) { connectedBus = bus }
+    func step() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
 }

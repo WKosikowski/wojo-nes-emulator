@@ -29,7 +29,11 @@
 		7946CE7C2EF57CE000569F0D /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		794885842E0DB6CE005AD1F1 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		794885D12E0EFFBC005AD1F1 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		79502CB22F0071FB002F6B7F /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		7951C25A2F00351E002B0EDD /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79743E1B2E11CBE400A73660 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		79A919562F02C2FB00F41316 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
+		79BAEF102F02C6280036FEAC /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79C4E78C2E113E5E004880E7 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79D4827E2E1495A40047E620 /* WojoNES.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = WojoNES.xcodeproj; sourceTree = "<group>"; };
 		79DAE1772DD0FB9C00FE84E3 /* WojoNES.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WojoNES.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -109,7 +113,27 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		79502CB42F0071FB002F6B7F /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7951C25C2F00351E002B0EDD /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
 		79743E1D2E11CBE400A73660 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		79A919582F02C2FB00F41316 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		79BAEF122F02C6280036FEAC /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -276,8 +300,16 @@
 					ProjectRef = 794885D12E0EFFBC005AD1F1 /* WojoNES.xcodeproj */;
 				},
 				{
+					ProductGroup = 79502CB42F0071FB002F6B7F /* Products */;
+					ProjectRef = 79502CB22F0071FB002F6B7F /* WojoNES.xcodeproj */;
+				},
+				{
 					ProductGroup = 791D92EF2EF7FA03005FC1B2 /* Products */;
 					ProjectRef = 791D92ED2EF7FA03005FC1B2 /* WojoNES.xcodeproj */;
+				},
+				{
+					ProductGroup = 79A919582F02C2FB00F41316 /* Products */;
+					ProjectRef = 79A919562F02C2FB00F41316 /* WojoNES.xcodeproj */;
 				},
 				{
 					ProductGroup = 794885862E0DB6CE005AD1F1 /* Products */;
@@ -310,6 +342,14 @@
 				{
 					ProductGroup = 7911FE352EFB0B1300C6855C /* Products */;
 					ProjectRef = 7911FE332EFB0B1300C6855C /* WojoNES.xcodeproj */;
+				},
+				{
+					ProductGroup = 7951C25C2F00351E002B0EDD /* Products */;
+					ProjectRef = 7951C25A2F00351E002B0EDD /* WojoNES.xcodeproj */;
+				},
+				{
+					ProductGroup = 79BAEF122F02C6280036FEAC /* Products */;
+					ProjectRef = 79BAEF102F02C6280036FEAC /* WojoNES.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -528,6 +568,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;
@@ -565,6 +606,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;

@@ -27,16 +27,34 @@ struct NESTestsSupportedTests {
 
         let cpu = NESCPU()
         let bus = NESBus()
+        let ppu = NESPPU(cartridge: cartridge)
+        let apu = NESAPU()
 
+        let nmi = Interrupt()
+        let dmcIrq = Interrupt()
+        let apuIrq = Interrupt()
+
+        cpu.addNmiInterrupt(nmi)
+        cpu.addApuIrqInterrupt(apuIrq)
+        cpu.addDmcIrqInterrupt(dmcIrq)
+
+        ppu.connect(bus)
         cpu.connect(bus)
         bus.connect(cartridge)
         bus.connect(cpu)
+        bus.connect(ppu)
+        bus.connect(apu)
+
+        ppu.addNmiInterrupt(nmi)
 
         cpu.programCounter = 0xC000
         #expect(bus.ram[0x2] == 0x0)
         cpu.step()
         #expect(bus.ram[0x2] == 0x0)
         for i in 0 ... 100_000 {
+            if i % 100 == 0 {
+                print("Iteration \(i)")
+            }
             cpu.step()
             #expect(bus.ram[0x2] == 0x0)
         }

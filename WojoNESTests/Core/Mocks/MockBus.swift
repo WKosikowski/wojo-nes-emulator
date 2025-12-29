@@ -18,14 +18,22 @@ class MockBus: Bus {
 
     var ppu: PPU! = MockPPU()
 
+    var cpu = MockCPU()
+
+    var apu: APU! = MockAPU()
+
+    var dmaOamAddr: Int = 0
+
+    // MARK: Computed Properties
+
+    var cycle: Int {
+        cpu.cycle
+    }
+
     // MARK: Functions
 
     func read(address: Int) -> UInt8 {
-        if let data = ram[address] {
-            return data
-        } else {
-            fatalError("nothing was written to memory at  \(String(format: "%02x", 12))")
-        }
+        ram[address] ?? 0
     }
 
     func write(address: Int, data: UInt8) {
@@ -41,5 +49,19 @@ class MockBus: Bus {
         ppu.swapNameTable(bankIdx: bankIdx, swapBankIdx: swapBankIdx)
     }
 
-    func step() {}
+    func step() {
+        // Prevent infinite loops by not doing anything
+    }
+
+    func stepPPU() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
+
+    func stepAPU() {
+        // Mock implementation - do nothing to avoid infinite loops
+    }
+
+    func resetCycles() {
+        cpu.resetCycles()
+    }
 }
