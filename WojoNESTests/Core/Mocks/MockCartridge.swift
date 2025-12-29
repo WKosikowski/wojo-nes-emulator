@@ -10,6 +10,10 @@ import Foundation
 class MockCartridge: Cartridge {
     // MARK: Properties
 
+    var bus: Bus! = MockBus()
+
+    var header: Header
+
     var mapper = Mapper()
 
     var chrMemory = BankMemory()
@@ -22,6 +26,18 @@ class MockCartridge: Cartridge {
 
     /// Track nametable swaps for testing
     var nameTableSwaps: [(bankIdx: Int, swapBankIdx: Int)] = []
+
+    // MARK: Computed Properties
+
+    var mirroring: Header.Mirroring {
+        header.mirroring
+    }
+
+    // MARK: Lifecycle
+
+    init() {
+        header = MockHeader()
+    }
 
     // MARK: Functions
 

@@ -31,6 +31,8 @@ class MockCPU: CPU {
 
     func handleNMI() {}
 
+    func resetProgram() {}
+
     func connect(_ bus: any Bus) { connectedBus = bus }
 
     func setDmaOam(enable: Bool) {}

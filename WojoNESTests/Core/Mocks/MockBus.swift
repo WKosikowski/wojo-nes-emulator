@@ -20,6 +20,8 @@ class MockBus: Bus {
 
     var cpu = MockCPU()
 
+    var apu: APU! = MockAPU()
+
     var dmaOamAddr: Int = 0
 
     // MARK: Computed Properties

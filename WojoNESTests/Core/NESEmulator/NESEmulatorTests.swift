@@ -18,7 +18,7 @@ struct NESEmulatorTests {
         let apu = MockAPU()
         let ppu = MockPPU()
 
-        let cartridge = MockCartridge()
+        let cartridge = try! MockCartridge()
 
         // Act
         let emulator = NESEmulator(bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
@@ -38,7 +38,7 @@ struct NESEmulatorTests {
         let cpu = MockCPU()
         let apu = MockAPU()
         let ppu = MockPPU()
-        let cartridge = MockCartridge()
+        let cartridge = try! MockCartridge()
 
         // Act
         let emulator = NESEmulator(bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
@@ -58,7 +58,7 @@ struct NESEmulatorTests {
         let cpu = MockCPU()
         let apu = MockAPU()
         let ppu = MockPPU()
-        let cartridge = MockCartridge()
+        let cartridge = try! MockCartridge()
 
         // Act
         let emulator = NESEmulator(bus: bus, cpu: cpu, apu: apu, ppu: ppu, cartridge: cartridge)
@@ -72,8 +72,8 @@ struct NESEmulatorTests {
     @Test("Connect cartridge updates cartridge property")
     func connectCartridge() {
         // Arrange
-        let emulator = NESEmulator(cartridge: MockCartridge())
-        let newCartridge = MockCartridge()
+        let emulator = NESEmulator(cartridge: try! MockCartridge())
+        let newCartridge = try! MockCartridge()
 
         // Act
         emulator.connect(cartridge: newCartridge)
@@ -85,7 +85,7 @@ struct NESEmulatorTests {
     @Test("Default initialiser uses correct component types")
     func defaultInitialiser() {
         // Act
-        let emulator = NESEmulator(cartridge: MockCartridge())
+        let emulator = NESEmulator(cartridge: try! MockCartridge())
 
         // Assert
         #expect(emulator.bus is NESBus, "Default bus should be NESBus")
