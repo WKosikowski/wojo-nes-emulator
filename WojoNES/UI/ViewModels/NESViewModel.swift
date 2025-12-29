@@ -26,6 +26,7 @@ class NESViewModel: ObservableObject {
     private var displayLink: CVDisplayLink?
     private var lastUpdateTime: CFTimeInterval = 0
     private var frameCount: Int = 0
+    private var isPaused: Bool = false
 
     // MARK: Lifecycle
 
@@ -51,7 +52,9 @@ class NESViewModel: ObservableObject {
     ///   - button: The NES button to bind (e.g., .a, .b, .up, .down)
     ///   - key: The keyboard key string to bind to the button
     func setControllerKeyBinding(button: NESButton, key: String) {
-        print("[NESViewModel] Setting binding: \(button.rawValue) -> \(key)")
+        #if DEBUG
+            print("[NESViewModel] Setting binding: \(button.rawValue) -> \(key)")
+        #endif
         controller.setKeyBinding(button: button, key: key)
     }
 
@@ -60,19 +63,24 @@ class NESViewModel: ObservableObject {
     /// - Returns: The keyboard key string bound to the button
     func getControllerKeyBinding(button: NESButton) -> String {
         let binding = controller.getKeyBinding(button: button)
-        print("[NESViewModel] Getting binding: \(button.rawValue) -> \(binding)")
+        #if DEBUG
+            print("[NESViewModel] Getting binding: \(button.rawValue) -> \(binding)")
+        #endif
         return binding
     }
 
     func resume() {
-        guard let displayLink else { return }
-        print("resume")
-        CVDisplayLinkStart(displayLink)
+        isPaused = false
+        #if DEBUG
+            print("[NESViewModel] Resumed emulation")
+        #endif
     }
 
     func pause() {
-        guard let displayLink else { return }
-        CVDisplayLinkStop(displayLink)
+        isPaused = true
+        #if DEBUG
+            print("[NESViewModel] Paused emulation")
+        #endif
     }
 
     func reset() {
@@ -104,7 +112,9 @@ class NESViewModel: ObservableObject {
     }
 
     private func setupDisplayLink() {
-        print("setup")
+        #if DEBUG
+            print("[NESViewModel] Setting up display link")
+        #endif
         let displayID = CGMainDisplayID()
         var displayLink: CVDisplayLink?
 
@@ -116,18 +126,20 @@ class NESViewModel: ObservableObject {
         CVDisplayLinkSetOutputCallback(displayLink, { _, _, _, _, _, displayLinkContext -> CVReturn in
             let viewModel = unsafeBitCast(displayLinkContext, to: NESViewModel.self)
             viewModel.update()
-            print("update")
             return kCVReturnSuccess
         }, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
 
         CVDisplayLinkSetCurrentCGDisplay(displayLink, displayID)
+
+        // Start the display link immediately - it runs continuously
+        // Pausing is handled by the isPaused flag, not by stopping the link
+        CVDisplayLinkStart(displayLink)
     }
 
     private func update() {
-        guard let nes else { return }
-        print(nes)
-        nes.step()
+        guard let nes, !isPaused else { return }
 
+        nes.step()
         pixelMap = nes.getFrame()
 
         let currentTime = CACurrentMediaTime()
