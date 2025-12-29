@@ -42,7 +42,6 @@ class NESEmulator: Emulator {
         // Set bus reference in cartridge (required for nametable mirroring)
         cartridge.bus = bus
 
-        
         let nmi = Interrupt()
         let apuIrq = Interrupt()
         let dmcIrq = Interrupt()

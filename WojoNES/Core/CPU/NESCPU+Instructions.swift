@@ -26,7 +26,7 @@ public extension NESCPU {
         let intAccumulator = Int(accumulator)
         var result = intAccumulator + memVal
         result += (statusRegister.carry == true) ? 1 : 0
-        statusRegister.carry = result > 0xFF  // carry set if no borrow needed
+        statusRegister.carry = result > 0xFF // carry set if no borrow needed
         statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
         accumulator = UInt8(result & 0xFF)
     }
@@ -649,7 +649,7 @@ public extension NESCPU {
         let intAccumulator = Int(accumulator)
         var result = intAccumulator + memVal
         result += statusRegister.carry ? 1 : 0
-        statusRegister.carry = result > 0xFF  // carry set if no borrow needed
+        statusRegister.carry = result > 0xFF // carry set if no borrow needed
         statusRegister.overflow = (result ^ intAccumulator) & (result ^ memVal) & 0x80 != 0
         accumulator = UInt8(result & 0xFF)
     }

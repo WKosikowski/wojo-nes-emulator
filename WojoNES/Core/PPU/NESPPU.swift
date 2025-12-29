@@ -88,6 +88,9 @@ class NESPPU: PPU {
 
     var nmi: Interrupt!
 
+    /// Debug helper: prints CHR memory and nametable state once
+    private var debugPrinted = false
+
     // MARK: Computed Properties
 
     var vramData: UInt8 {
@@ -300,8 +303,6 @@ class NESPPU: PPU {
         }
     }
 
-    /// Debug helper: prints CHR memory and nametable state once
-    private var debugPrinted = false
     func debugPrintState() {
         guard !debugPrinted, y == 0, x == 8 else { return }
         debugPrinted = true
@@ -333,13 +334,13 @@ class NESPPU: PPU {
         print("DEBUG: First 8 nametable entries: ", terminator: "")
         let ntIdx = currentRenderingVramRegister.nameTableY << 1 | currentRenderingVramRegister.nameTableX
         let ntBank = nameTables.banks[ntIdx]
-        for i in 0..<8 {
+        for i in 0 ..< 8 {
             print("\(ntBank[i]) ", terminator: "")
         }
         print("")
 
         // For each of first 8 tiles, show the pattern data
-        let patternBase = controlRegister.patternBg << 12  // 0x0000 or 0x1000
+        let patternBase = controlRegister.patternBg << 12 // 0x0000 or 0x1000
         print("DEBUG: patternBase = 0x\(String(patternBase, radix: 16))")
 
         // Get first tile directly
@@ -371,7 +372,7 @@ class NESPPU: PPU {
         if cartridge.chrMemory.banks.count > 1 {
             let bank1 = cartridge.chrMemory.banks[1]
             var hexStr = "DEBUG: Bank1 first 16 bytes: "
-            for i in 0..<min(16, bank1.count) {
+            for i in 0 ..< min(16, bank1.count) {
                 hexStr += String(format: "%02X ", bank1[i])
             }
             print(hexStr)
@@ -380,9 +381,9 @@ class NESPPU: PPU {
         // Find a tile in nametable that is NOT 36 and check its pattern
         print("DEBUG: Searching for non-36 tile...")
         var foundNonBlank = false
-        for offset in 0..<min(960, ntBank.count) {
+        for offset in 0 ..< min(960, ntBank.count) {
             let tileId = Int(ntBank[offset])
-            if tileId != 36 && tileId != 0 {
+            if tileId != 36, tileId != 0 {
                 let row = offset / 32
                 let col = offset % 32
                 let addr = patternBase + (tileId << 4)
@@ -398,7 +399,7 @@ class NESPPU: PPU {
         }
 
         // Check palette
-        print("DEBUG: Palette indices [0-7]: \(paletteIndices[0..<8].map { $0 })")
+        print("DEBUG: Palette indices [0-7]: \(paletteIndices[0 ..< 8].map { $0 })")
         print("DEBUG: ========================================")
     }
 
