@@ -99,6 +99,8 @@ final class NESController: KeyboardMappableController {
             "down": "Down",
             "left": "Left",
             "right": "Right",
+            "pause": "Escape",
+            "screenshot": "F12",
         ]
         updateKeyCodeBindings()
     }
@@ -116,14 +118,16 @@ final class NESController: KeyboardMappableController {
     /// Gets the default key binding for a button
     private func getDefaultKeyBinding(for button: NESButton) -> String {
         switch button {
-            case .a: return "a"
-            case .b: return "b"
+            case .a: return "x"
+            case .b: return "z"
             case .select: return "Space"
             case .start: return "Return"
             case .up: return "Up"
             case .down: return "Down"
             case .left: return "Left"
             case .right: return "Right"
+            case .pause: return "Escape"
+            case .screenshot: return "F12"
         }
     }
 
@@ -138,6 +142,8 @@ final class NESController: KeyboardMappableController {
             case .down: return "down"
             case .left: return "left"
             case .right: return "right"
+            case .pause: return "pause"
+            case .screenshot: return "screenshot"
         }
     }
 
@@ -152,6 +158,8 @@ final class NESController: KeyboardMappableController {
             case "down": return .down
             case "left": return .left
             case "right": return .right
+            case "pause": return .pause
+            case "screenshot": return .screenshot
             default: return nil
         }
     }
@@ -167,6 +175,10 @@ final class NESController: KeyboardMappableController {
             case .down: down = isPressed
             case .left: left = isPressed
             case .right: right = isPressed
+            case .pause,
+                 .screenshot:
+                // Emulator controls are handled separately, not as controller state
+                break
         }
     }
 

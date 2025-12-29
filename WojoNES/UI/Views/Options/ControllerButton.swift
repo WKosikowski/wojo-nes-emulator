@@ -16,13 +16,13 @@ struct ControllerButton: View {
     var body: some View {
         Button(action: action) {
             Text(viewModel.getControllerKeyBinding(button: button))
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 10)
-                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 8)
+                .frame(minWidth: 40)
                 .background(isSelected ? Color.blue : Color.black)
                 .cornerRadius(6)
         }
