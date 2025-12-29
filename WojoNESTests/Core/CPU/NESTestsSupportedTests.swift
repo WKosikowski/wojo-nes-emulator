@@ -29,7 +29,7 @@ struct NESTestsSupportedTests {
         let bus = NESBus()
         let ppu = NESPPU(cartridge: cartridge)
         let apu = NESAPU()
-        
+
         let nmi = Interrupt()
         let dmcIrq = Interrupt()
         let apuIrq = Interrupt()

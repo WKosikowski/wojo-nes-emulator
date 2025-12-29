@@ -9,14 +9,13 @@ import Testing
 
 @Suite("NESCPU Addressing Modes")
 struct NESCPUAddressingTests {
-
-    // Helper function to properly initialize CPU for testing
+    /// Helper function to properly initialize CPU for testing
     func setupCPU() -> (NESCPU, MockBus) {
         let cpu = NESCPU()
         let bus = MockBus()
         let apu = MockAPU()
         let ppu = MockPPU()
-        
+
         cpu.connect(bus)
         bus.connect(apu)
         bus.connect(ppu)
