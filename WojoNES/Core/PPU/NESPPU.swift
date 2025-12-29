@@ -193,10 +193,9 @@ class NESPPU: PPU {
     func read(_ address: Int) -> UInt8 {
         var data = lastBusData
         switch address & 0x7 {
-            case 2:
+            case 2: // PPU Status Register (0x2002)
+                // Clear upper 3 bits of open bus, then combine with status flags (bits 7-5)
                 data &= 0x1F
-                // PPU Status Register (0x2002)
-                // Combine the status flags (bits 7-5) with the last bus data
                 data |= UInt8(statusRegister.value & 0xE0)
                 // Clear the vertical blank flag upon read (standard PPU behaviour)
                 statusRegister.verticalBlank = false
@@ -301,11 +300,114 @@ class NESPPU: PPU {
         }
     }
 
+    /// Debug helper: prints CHR memory and nametable state once
+    private var debugPrinted = false
+    func debugPrintState() {
+        guard !debugPrinted, y == 0, x == 8 else { return }
+        debugPrinted = true
+
+        print("DEBUG: ========== PPU STATE DUMP ==========")
+
+        // Check rendering flags
+        print("DEBUG: renderBackground=\(mask.renderBackground), renderSprites=\(mask.renderSprites)")
+        print("DEBUG: patternBg=\(controlRegister.patternBg), patternSprite=\(controlRegister.patternSprite)")
+        print("DEBUG: fineX=\(currentRenderingVramRegister.fineX), fineY=\(currentRenderingVramRegister.fineY)")
+        print("DEBUG: coarseX=\(currentRenderingVramRegister.coarseX), coarseY=\(currentRenderingVramRegister.coarseY)")
+        print("DEBUG: nameTableX=\(currentRenderingVramRegister.nameTableX), nameTableY=\(currentRenderingVramRegister.nameTableY)")
+
+        // Check CHR memory bank structure
+        print("DEBUG: CHR bankSize=\(cartridge.chrMemory.bankSizeValue), numBanks=\(cartridge.chrMemory.banks.count), swapBanks=\(cartridge.chrMemory.swapBanks.count)")
+        for (i, bank) in cartridge.chrMemory.banks.enumerated() {
+            let nonZero = bank.filter { $0 != 0 }.count
+            print("DEBUG: CHR bank[\(i)] size=\(bank.count), nonZero=\(nonZero)")
+        }
+
+        // Check nametable structure
+        print("DEBUG: NT bankSize=\(nameTables.bankSizeValue), numBanks=\(nameTables.banks.count)")
+        for (i, bank) in nameTables.banks.enumerated() {
+            let nonZero = bank.filter { $0 != 0 }.count
+            print("DEBUG: NT bank[\(i)] nonZero=\(nonZero)")
+        }
+
+        // Check first 8 tiles from nametable 0
+        print("DEBUG: First 8 nametable entries: ", terminator: "")
+        let ntIdx = currentRenderingVramRegister.nameTableY << 1 | currentRenderingVramRegister.nameTableX
+        let ntBank = nameTables.banks[ntIdx]
+        for i in 0..<8 {
+            print("\(ntBank[i]) ", terminator: "")
+        }
+        print("")
+
+        // For each of first 8 tiles, show the pattern data
+        let patternBase = controlRegister.patternBg << 12  // 0x0000 or 0x1000
+        print("DEBUG: patternBase = 0x\(String(patternBase, radix: 16))")
+
+        // Get first tile directly
+        let tile0Id = Int(ntBank[0])
+        let tile0Addr = patternBase + (tile0Id << 4)
+        print("DEBUG: Tile 0: id=\(tile0Id), addr=0x\(String(tile0Addr, radix: 16))")
+
+        // Access CHR memory directly via banks array
+        let chrBankIdx = tile0Addr / cartridge.chrMemory.bankSizeValue
+        let chrOffset = tile0Addr % cartridge.chrMemory.bankSizeValue
+        print("DEBUG: CHR access: bankIdx=\(chrBankIdx), offset=\(chrOffset)")
+
+        if chrBankIdx < cartridge.chrMemory.banks.count {
+            let bank = cartridge.chrMemory.banks[chrBankIdx]
+            print("DEBUG: Bank size=\(bank.count)")
+            if chrOffset < bank.count {
+                let lsb = bank[chrOffset]
+                let msb = bank[chrOffset + 8]
+                print("DEBUG: Direct bank access: lsb=\(lsb), msb=\(msb)")
+            }
+        }
+
+        // Also try via subscript
+        let subLsb = cartridge.chrMemory[tile0Addr]
+        let subMsb = cartridge.chrMemory[tile0Addr + 8]
+        print("DEBUG: Subscript access: lsb=\(subLsb), msb=\(subMsb)")
+
+        // Print first 16 bytes of bank 1 directly
+        if cartridge.chrMemory.banks.count > 1 {
+            let bank1 = cartridge.chrMemory.banks[1]
+            var hexStr = "DEBUG: Bank1 first 16 bytes: "
+            for i in 0..<min(16, bank1.count) {
+                hexStr += String(format: "%02X ", bank1[i])
+            }
+            print(hexStr)
+        }
+
+        // Find a tile in nametable that is NOT 36 and check its pattern
+        print("DEBUG: Searching for non-36 tile...")
+        var foundNonBlank = false
+        for offset in 0..<min(960, ntBank.count) {
+            let tileId = Int(ntBank[offset])
+            if tileId != 36 && tileId != 0 {
+                let row = offset / 32
+                let col = offset % 32
+                let addr = patternBase + (tileId << 4)
+                let lsb = cartridge.chrMemory[addr]
+                let msb = cartridge.chrMemory[addr + 8]
+                print("DEBUG: Found tile at (\(col),\(row)): id=\(tileId), addr=0x\(String(addr, radix: 16)), lsb=\(lsb), msb=\(msb)")
+                foundNonBlank = true
+                break
+            }
+        }
+        if !foundNonBlank {
+            print("DEBUG: All tiles in nametable are 36 or 0!")
+        }
+
+        // Check palette
+        print("DEBUG: Palette indices [0-7]: \(paletteIndices[0..<8].map { $0 })")
+        print("DEBUG: ========================================")
+    }
+
     /// Fetches and buffers the next background tile from the nametable.
     /// Rotates tiles through the pipeline: buffer -> prev -> actual -> next.
     /// This method is called every 8 pixels to supply the rendering pipeline with fresh tile data
     /// including the colour information and pattern data (bit planes).
     func readNextTile() { // 2.4%
+        debugPrintState()
         // Rotate tiles through the pipeline for smooth 8-pixel boundary rendering
         bufferTile = prevTile
         prevTile = actTile
@@ -454,7 +556,7 @@ class NESPPU: PPU {
             // Load pattern data for this sprite row from CHR memory
             fetchSpritePattern(sprite: &sprite, row: row)
 
-            // Apply horizontal flip to both bit planes if the flip bit is set
+            // Apply horizontal flip to both bit planes if the flip bit is set (bit 6)
             if (sprite.attribute & 0x40) != 0 {
                 sprite.lsb = Self.flipByte(sprite.lsb)
                 sprite.msb = Self.flipByte(sprite.msb)

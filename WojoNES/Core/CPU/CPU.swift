@@ -7,8 +7,6 @@
 
 protocol CPU: AnyObject {
     func step()
-    func handleIRQ()
-    func handleNMI()
     func setDmaOam(enable: Bool)
     func addNmiInterrupt(_ interrupt: Interrupt)
     func addApuIrqInterrupt(_ interrupt: Interrupt)
