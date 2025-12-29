@@ -27,13 +27,12 @@ struct KeyCaptureView: NSViewRepresentable {
 
         func keyDown(with event: NSEvent) {
             guard parent.isCapturing, let button = parent.selectedButton else { return }
-            let key = event.charactersIgnoringModifiers ?? ""
-            if !key.isEmpty {
-                print("[KeyCaptureView] Captured key: \(key) for button \(button.rawValue)")
-                viewModel?.setControllerKeyBinding(button: button, key: key)
-                parent.isCapturing = false
-                parent.selectedButton = nil
-            }
+            // Use keyCode to get a readable string for all keys including special keys
+            let key = NESController.keyCodeToString(event.keyCode)
+            print("[KeyCaptureView] Captured key: \(key) (keyCode: \(event.keyCode)) for button \(button.rawValue)")
+            viewModel?.setControllerKeyBinding(button: button, key: key)
+            parent.isCapturing = false
+            parent.selectedButton = nil
         }
     }
 

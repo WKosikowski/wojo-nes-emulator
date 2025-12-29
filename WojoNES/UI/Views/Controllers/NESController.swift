@@ -6,6 +6,77 @@
 /// and provides conversion to byte format for emulator input.
 /// Supports dynamic key binding configuration via string-based key identifiers.
 final class NESController: KeyboardMappableController {
+    // MARK: Static Properties
+
+//    | Key          | Symbol                 |
+//    |--------------|------------------------|
+//    | Arrow keys   | ↑ ↓ ← →                |
+//    | Return       | ↩                      |
+//    | Space        | ␣                      |
+//    | Escape       | ⎋                      |
+//    | Tab          | ⇥                      |
+//    | Backspace    | ⌫                      |
+//    | Delete       | ⌦                      |
+//    | Page Up/Down | ⇞ ⇟                    |
+//    | Home/End     | ↖ ↘                    |
+//    | Command      | ⌘                      |
+//    | Shift        | ⇧                      |
+//    | Option       | ⌥                      |
+//    | Control      | ⌃                      |
+//    | Letters      | Uppercase (A, B, C...) |
+
+    /// Static map of macOS key codes to readable string representations
+    /// Uses standard keyboard symbols where appropriate
+    static let keyCodeMap: [UInt16: String] = [
+        // Number row
+        18: "1", 19: "2", 20: "3", 21: "4", 23: "5",
+        22: "6", 26: "7", 28: "8", 25: "9", 29: "0",
+
+        // Top letter row (QWERTY)
+        12: "Q", 13: "W", 14: "E", 15: "R", 17: "T",
+        16: "Y", 32: "U", 34: "I", 31: "O", 35: "P",
+
+        // Middle letter row (ASDFGH)
+        0: "A", 1: "S", 2: "D", 3: "F", 5: "G",
+        4: "H", 38: "J", 40: "K", 37: "L",
+
+        // Bottom letter row (ZXCVBN)
+        6: "Z", 7: "X", 8: "C", 9: "V", 11: "B",
+        45: "N", 46: "M",
+
+        // Special keys with symbols
+        36: "↩", // Return
+        49: "␣", // Space
+        48: "⇥", // Tab
+        53: "⎋", // Escape
+        51: "⌫", // Backspace
+        117: "⌦", // Delete
+        123: "←", // Left arrow
+        124: "→", // Right arrow
+        126: "↑", // Up arrow
+        125: "↓", // Down arrow
+        116: "⇞", // Page Up
+        121: "⇟", // Page Down
+        115: "↖", // Home
+        119: "↘", // End
+
+        // Function keys
+        122: "F1", 120: "F2", 99: "F3", 118: "F4",
+        96: "F5", 97: "F6", 98: "F7", 100: "F8",
+        101: "F9", 109: "F10", 103: "F11", 111: "F12",
+
+        // Symbol keys
+        27: "-", 24: "+", 41: ";", 39: "'", 43: ",",
+        47: ".", 44: "/", 50: "`", 33: "[", 30: "]",
+        42: "\\",
+
+        // Modifier keys with symbols
+        55: "⌘", // Command
+        56: "⇧", // Shift
+        58: "⌥", // Option/Alt
+        59: "⌃", // Control
+    ]
+
     // MARK: Properties
 
     var a: Bool = false // A button
@@ -33,6 +104,13 @@ final class NESController: KeyboardMappableController {
 
     init() {
         loadDefaultKeyBindings()
+    }
+
+    // MARK: Static Functions
+
+    /// Converts a macOS key code to a readable string (static version for external use)
+    static func keyCodeToString(_ keyCode: UInt16) -> String {
+        keyCodeMap[keyCode] ?? "Key_\(keyCode)"
     }
 
     // MARK: Functions
@@ -91,15 +169,15 @@ final class NESController: KeyboardMappableController {
     /// Loads the default key bindings (Return, Space, X, Z, arrow keys)
     private func loadDefaultKeyBindings() {
         keyBindings = [
-            "start": "Return",
-            "select": "Space",
-            "a": "x",
-            "b": "z",
-            "up": "Up",
-            "down": "Down",
-            "left": "Left",
-            "right": "Right",
-            "pause": "Escape",
+            "start": "↩",
+            "select": "␣",
+            "a": "X",
+            "b": "Z",
+            "up": "↑",
+            "down": "↓",
+            "left": "←",
+            "right": "→",
+            "pause": "⎋",
             "screenshot": "F12",
         ]
         updateKeyCodeBindings()
@@ -118,15 +196,15 @@ final class NESController: KeyboardMappableController {
     /// Gets the default key binding for a button
     private func getDefaultKeyBinding(for button: NESButton) -> String {
         switch button {
-            case .a: return "x"
-            case .b: return "z"
-            case .select: return "Space"
-            case .start: return "Return"
-            case .up: return "Up"
-            case .down: return "Down"
-            case .left: return "Left"
-            case .right: return "Right"
-            case .pause: return "Escape"
+            case .a: return "X"
+            case .b: return "Z"
+            case .select: return "␣"
+            case .start: return "↩"
+            case .up: return "↑"
+            case .down: return "↓"
+            case .left: return "←"
+            case .right: return "→"
+            case .pause: return "⎋"
             case .screenshot: return "F12"
         }
     }
@@ -187,44 +265,6 @@ final class NESController: KeyboardMappableController {
     /// - Parameter keyCode: The macOS key code from NSEvent
     /// - Returns: A readable string representation of the key
     private func keyStringFromCode(_ keyCode: UInt16) -> String {
-        let keyCodeMap: [UInt16: String] = [
-            // Number row
-            18: "1", 19: "2", 20: "3", 21: "4", 23: "5",
-            22: "6", 26: "7", 28: "8", 25: "9", 29: "0",
-
-            // Top letter row (QWERTY)
-            12: "q", 13: "w", 14: "e", 15: "r", 17: "t",
-            16: "y", 32: "u", 34: "i", 31: "o", 35: "p",
-
-            // Middle letter row (ASDFGH)
-            0: "a", 1: "s", 2: "d", 3: "f", 5: "g",
-            4: "h", 38: "j", 40: "k", 37: "l",
-
-            // Bottom letter row (ZXCVBN)
-            6: "z", 7: "x", 8: "c", 9: "v", 11: "b",
-            45: "n", 46: "m",
-
-            // Special keys
-            36: "Return", 49: "Space", 48: "Tab", 53: "Escape",
-            51: "Backspace", 117: "Delete", 123: "Left", 124: "Right",
-            126: "Up", 125: "Down", 116: "PageUp", 121: "PageDown",
-            115: "Home", 119: "End",
-
-            // Function keys
-            122: "F1", 120: "F2", 99: "F3", 118: "F4",
-            96: "F5", 97: "F6", 98: "F7", 100: "F8",
-            101: "F9", 109: "F10", 103: "F11", 111: "F12",
-
-            // Symbol keys
-            27: "-", 24: "+", 41: ";", 39: "'", 43: ",",
-            47: ".", 44: "/", 50: "`", 33: "[", 30: "]",
-            42: "\\",
-
-            // Modifier keys (for reference, not typically bound)
-            55: "Cmd", 56: "Shift", 58: "Alt", 59: "Ctrl",
-        ]
-
-        // Return mapped value or generic identifier for unknown keys
-        return keyCodeMap[keyCode] ?? "Key_\(keyCode)"
+        NESController.keyCodeToString(keyCode)
     }
 }
