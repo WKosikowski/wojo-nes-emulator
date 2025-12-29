@@ -14,7 +14,8 @@ struct KeyCaptureView: NSViewRepresentable {
     class Coordinator: NSObject {
         // MARK: Properties
 
-        let parent: KeyCaptureView
+        var parent: KeyCaptureView
+        var viewModel: NESViewModel?
 
         // MARK: Lifecycle
 
@@ -29,7 +30,7 @@ struct KeyCaptureView: NSViewRepresentable {
             let key = event.charactersIgnoringModifiers ?? ""
             if !key.isEmpty {
                 print("[KeyCaptureView] Captured key: \(key) for button \(button.rawValue)")
-                parent.viewModel.setControllerKeyBinding(button: button, key: key)
+                viewModel?.setControllerKeyBinding(button: button, key: key)
                 parent.isCapturing = false
                 parent.selectedButton = nil
             }
@@ -51,6 +52,10 @@ struct KeyCaptureView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: KeyCaptureNSView, context: Context) {
+        // Update coordinator's references to current parent and viewModel
+        context.coordinator.parent = self
+        context.coordinator.viewModel = viewModel
+
         // Set first responder when capturing starts
         if isCapturing {
             DispatchQueue.main.async {
