@@ -18,7 +18,8 @@ struct NESView: View {
     // MARK: SwiftUI Properties
 
     /// The view model managing emulator state and operations
-    @StateObject private var viewModel = NESViewModel()
+    @EnvironmentObject var viewModel: NESViewModel
+
     /// Tracks whether the emulator is currently running
     @State private var isRunning = false
     /// Controls visibility of the overlay menu bar
@@ -54,6 +55,24 @@ struct NESView: View {
                 MenuBarView(isRunning: $isRunning, viewModel: viewModel)
                     .padding(16)
                     .transition(.opacity)
+            }
+
+            // FPS display in the top-right corner
+            if viewModel.showFPS {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Text(String(format: "%.1f FPS", viewModel.fps))
+                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(6)
+                            .padding(16)
+                    }
+                    Spacer()
+                }
             }
 
             // Error message overlay displayed when an error occurs

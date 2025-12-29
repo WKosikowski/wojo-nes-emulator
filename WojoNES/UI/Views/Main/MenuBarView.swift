@@ -41,10 +41,9 @@ struct MenuBarView: View {
                 isRunning.toggle()
             })
 
-            // Settings button — for opening preferences and configuration options
-            // TODO: Implement settings view controller
+            // Settings button — opens the Options window for controller configuration and display settings
             MenuButton(icon: "gear", label: "Settings", action: {
-                // TODO: Open settings
+                NSApp.sendAction(#selector(AppDelegate.showSecondWindow), to: nil, from: nil)
             })
         }
         // Padding around all buttons inside the menu

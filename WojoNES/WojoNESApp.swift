@@ -57,7 +57,8 @@ struct WojoNESApp: App {
 
     var body: some Scene {
         WindowGroup(Windows.main.title) {
-            NESView()
+            WindowOpenerView()
+                .environmentObject(viewModel)
                 .frame(minWidth: 400, minHeight: 400)
         }
         .windowStyle(.hiddenTitleBar)
@@ -81,12 +82,16 @@ struct WojoNESApp: App {
     }
 }
 
-// MARK: - SecondView
+// MARK: - WindowOpenerView
 
-struct SecondView: View {
+struct WindowOpenerView: View {
+    @Environment(\.openWindow) private var openWindow
+    @EnvironmentObject var viewModel: NESViewModel
+
     var body: some View {
-        Text("This is the second window")
-            .frame(width: 300, height: 200)
-            .padding()
+        NESView()
+            .onReceive(NotificationCenter.default.publisher(for: .openOptionsWindow)) { _ in
+                openWindow(id: Windows.options.identifier)
+            }
     }
 }

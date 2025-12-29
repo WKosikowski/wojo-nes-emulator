@@ -111,6 +111,17 @@ struct ControllerConfigView: View {
                 .background(Color.gray.opacity(0.5))
                 .cornerRadius(10)
 
+                // Display Options
+                VStack(spacing: 12) {
+                    Text("Display Options")
+                        .font(.headline)
+                    Toggle("Show FPS Counter", isOn: $viewModel.showFPS)
+                        .toggleStyle(.checkbox)
+                }
+                .padding(12)
+                .background(Color.gray.opacity(0.5))
+                .cornerRadius(10)
+
                 // Key capture prompt
                 if isCapturingKey, let button = selectedButton {
                     Text("Press a key for \(button.rawValue)")

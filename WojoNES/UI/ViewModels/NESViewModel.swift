@@ -14,6 +14,7 @@ class NESViewModel: ObservableObject {
     // MARK: Properties
 
     @Published var fps: Double = 0
+    @Published var showFPS: Bool = false
     @Published var cpuCycles: UInt64 = 0
     @Published var scanline: Int = 0
     @Published var cycle: Int = 0
