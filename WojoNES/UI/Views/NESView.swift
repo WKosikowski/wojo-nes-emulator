@@ -20,8 +20,6 @@ struct NESView: View {
     /// The view model managing emulator state and operations
     @EnvironmentObject var viewModel: NESViewModel
 
-    /// Tracks whether the emulator is currently running
-    @State private var isRunning = false
     /// Controls visibility of the overlay menu bar
     @State private var showMenu = false
     /// Timer used to automatically hide the menu after inactivity
@@ -32,7 +30,7 @@ struct NESView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             // Full-screen Metal bitmap view rendering the emulator output
-            MetalBitmapView(pixmap: viewModel.pixelMap) { controller in
+            MetalBitmapView(pixmap: viewModel.pixelMap, controller: viewModel.getController()) { controller in
                 viewModel.nesControllerEvent(controller: controller)
             }
             .ignoresSafeArea()
@@ -52,7 +50,7 @@ struct NESView: View {
             // Overlay menu bar positioned in the top-left corner
             // Only displayed when the user is actively moving the mouse
             if showMenu {
-                MenuBarView(isRunning: $isRunning, viewModel: viewModel)
+                MenuBarView(viewModel: viewModel)
                     .padding(16)
                     .transition(.opacity)
             }
@@ -87,6 +85,24 @@ struct NESView: View {
                         .padding()
                     Spacer()
                 }
+            }
+
+            // Screenshot feedback camera icon in bottom-left corner
+            if viewModel.showScreenshotFeedback {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(8)
+                            .padding(16)
+                        Spacer()
+                    }
+                }
+                .transition(.opacity)
             }
         }
         // Maintain the NES aspect ratio (256:240) when scaling the window

@@ -10,6 +10,16 @@ import Foundation
 import MetalKit
 import SwiftUI
 
+// MARK: - EmulatorState
+
+enum EmulatorState {
+    case idle // No ROM loaded
+    case running // ROM loaded and playing
+    case paused // ROM loaded but paused
+}
+
+// MARK: - NESViewModel
+
 class NESViewModel: ObservableObject {
     // MARK: Properties
 
@@ -20,18 +30,75 @@ class NESViewModel: ObservableObject {
     @Published var cycle: Int = 0
     @Published var errorMessage: String?
     @Published var pixelMap: PixelMatrix = .init(width: 256, height: 240)
+    @Published var showScreenshotFeedback: Bool = false
+    @Published var emulatorState: EmulatorState = .idle
 
     private var nes: NESEmulator?
     private let controller: NESController = .init()
     private var displayLink: CVDisplayLink?
     private var lastUpdateTime: CFTimeInterval = 0
     private var frameCount: Int = 0
-    private var isPaused: Bool = false
+
+    // MARK: Computed Properties
+
+    private var screenshotDirectory: URL? {
+        get {
+            guard let bookmarkData = UserDefaults.standard.data(forKey: "screenshotDirectoryBookmark") else {
+                return nil
+            }
+
+            do {
+                var isStale = false
+                let url = try URL(
+                    resolvingBookmarkData: bookmarkData,
+                    options: .withSecurityScope,
+                    relativeTo: nil,
+                    bookmarkDataIsStale: &isStale
+                )
+
+                if isStale {
+                    #if DEBUG
+                        print("[NESViewModel] Bookmark is stale, needs to be recreated")
+                    #endif
+                }
+
+                return url
+            } catch {
+                #if DEBUG
+                    print("[NESViewModel] Failed to resolve bookmark: \(error)")
+                #endif
+                return nil
+            }
+        }
+        set {
+            guard let url = newValue else {
+                UserDefaults.standard.removeObject(forKey: "screenshotDirectoryBookmark")
+                return
+            }
+
+            do {
+                let bookmarkData = try url.bookmarkData(
+                    options: .withSecurityScope,
+                    includingResourceValuesForKeys: nil,
+                    relativeTo: nil
+                )
+                UserDefaults.standard.set(bookmarkData, forKey: "screenshotDirectoryBookmark")
+                #if DEBUG
+                    print("[NESViewModel] Saved security-scoped bookmark for: \(url.path)")
+                #endif
+            } catch {
+                #if DEBUG
+                    print("[NESViewModel] Failed to create bookmark: \(error)")
+                #endif
+            }
+        }
+    }
 
     // MARK: Lifecycle
 
     init() {
         setupDisplayLink()
+        setupControllerCallbacks()
     }
 
     deinit {
@@ -44,6 +111,10 @@ class NESViewModel: ObservableObject {
 
     func nesControllerEvent(controller: NESController) {
         nes?.mapController(controller)
+    }
+
+    func getController() -> NESController {
+        controller
     }
 
     /// Sets a key binding for a specific NES controller button.
@@ -70,14 +141,14 @@ class NESViewModel: ObservableObject {
     }
 
     func resume() {
-        isPaused = false
+        emulatorState = .running
         #if DEBUG
             print("[NESViewModel] Resumed emulation")
         #endif
     }
 
     func pause() {
-        isPaused = true
+        emulatorState = .paused
         #if DEBUG
             print("[NESViewModel] Paused emulation")
         #endif
@@ -85,6 +156,89 @@ class NESViewModel: ObservableObject {
 
     func reset() {
         nes?.reset()
+    }
+
+    func takeScreenshot() {
+        #if DEBUG
+            print("[NESViewModel] takeScreenshot() called")
+            print("[NESViewModel] Screenshot directory: \(screenshotDirectory?.path ?? "nil")")
+        #endif
+
+        guard let directory = screenshotDirectory else {
+            #if DEBUG
+                print("[NESViewModel] Screenshot directory not set - returning early")
+            #endif
+            return
+        }
+
+        // Start accessing the security-scoped resource
+        let accessing = directory.startAccessingSecurityScopedResource()
+        #if DEBUG
+            print("[NESViewModel] Security-scoped access started: \(accessing)")
+        #endif
+
+        defer {
+            if accessing {
+                directory.stopAccessingSecurityScopedResource()
+                #if DEBUG
+                    print("[NESViewModel] Security-scoped access stopped")
+                #endif
+            }
+        }
+
+        // Generate timestamp filename
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        let timestamp = formatter.string(from: Date())
+        let filename = "screenshot_\(timestamp).png"
+        let filePath = directory.appendingPathComponent(filename).path
+
+        #if DEBUG
+            print("[NESViewModel] Attempting to save screenshot to: \(filePath)")
+        #endif
+
+        // Save screenshot
+        if pixelMap.saveToPNG(filePath: filePath) {
+            #if DEBUG
+                print("[NESViewModel] Screenshot saved successfully!")
+            #endif
+
+            // Show camera icon feedback
+            showScreenshotFeedback = true
+
+            // Hide feedback after 1 second
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.showScreenshotFeedback = false
+            }
+        } else {
+            #if DEBUG
+                print("[NESViewModel] Failed to save screenshot")
+            #endif
+        }
+    }
+
+    func selectScreenshotDirectory() {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseFiles = false
+        openPanel.canChooseDirectories = true
+        openPanel.allowsMultipleSelection = false
+        openPanel.canCreateDirectories = true
+        openPanel.title = "Select Screenshot Directory"
+        openPanel.prompt = "Select"
+
+        openPanel.begin { [weak self] result in
+            guard let self else { return }
+            if result == .OK, let url = openPanel.url {
+                screenshotDirectory = url
+                #if DEBUG
+                    print("[NESViewModel] Screenshot directory set to: \(url.path)")
+                #endif
+            }
+        }
+    }
+
+    func getScreenshotDirectory() -> String? {
+        screenshotDirectory?.path
     }
 
     func loadROM() {
@@ -104,9 +258,37 @@ class NESViewModel: ObservableObject {
                     nes = NESEmulator(cartridge: cartridge, controller: controller)
 
                     errorMessage = nil
+
+                    // Start the emulator automatically when ROM is loaded
+                    emulatorState = .running
                 } catch {
                     errorMessage = "Failed to load ROM: \(error.localizedDescription)"
                 }
+            }
+        }
+    }
+
+    private func setupControllerCallbacks() {
+        #if DEBUG
+            print("[NESViewModel] Setting up controller callbacks")
+        #endif
+
+        controller.onScreenshotPressed = { [weak self] in
+            #if DEBUG
+                print("[NESViewModel] Screenshot callback triggered!")
+            #endif
+            self?.takeScreenshot()
+        }
+
+        controller.onPauseToggled = { [weak self] in
+            #if DEBUG
+                print("[NESViewModel] Pause callback triggered!")
+            #endif
+            guard let self else { return }
+            if emulatorState == .running {
+                pause()
+            } else {
+                resume()
             }
         }
     }
@@ -132,12 +314,12 @@ class NESViewModel: ObservableObject {
         CVDisplayLinkSetCurrentCGDisplay(displayLink, displayID)
 
         // Start the display link immediately - it runs continuously
-        // Pausing is handled by the isPaused flag, not by stopping the link
+        // Pausing is handled by checking the emulator state, not by stopping the link
         CVDisplayLinkStart(displayLink)
     }
 
     private func update() {
-        guard let nes, !isPaused else { return }
+        guard let nes, emulatorState == .running else { return }
 
         nes.step()
         pixelMap = nes.getFrame()

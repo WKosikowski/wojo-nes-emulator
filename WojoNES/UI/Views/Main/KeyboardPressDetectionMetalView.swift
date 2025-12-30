@@ -34,18 +34,22 @@ class KeyboardPressDetectionMetalView<Controller: KeyboardMappableController>: M
 
     // MARK: Properties
 
-    var controllerState = Controller()
+    var controllerState: Controller?
     var onControllerUpdate: ((Controller) -> Void)?
 
     // MARK: Overridden Functions
 
     override func keyDown(with event: NSEvent) {
-        controllerState.updateState(keyCode: event.keyCode, isPressed: true)
-        onControllerUpdate?(controllerState)
+        guard let controller = controllerState else { return }
+        var mutableController = controller
+        mutableController.updateState(keyCode: event.keyCode, isPressed: true)
+        onControllerUpdate?(mutableController)
     }
 
     override func keyUp(with event: NSEvent) {
-        controllerState.updateState(keyCode: event.keyCode, isPressed: false)
-        onControllerUpdate?(controllerState)
+        guard let controller = controllerState else { return }
+        var mutableController = controller
+        mutableController.updateState(keyCode: event.keyCode, isPressed: false)
+        onControllerUpdate?(mutableController)
     }
 }
