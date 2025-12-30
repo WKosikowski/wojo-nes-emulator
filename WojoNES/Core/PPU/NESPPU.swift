@@ -21,8 +21,9 @@ class NESPPU: PPU {
 
     // MARK: - Bus & Configuration
 
-    var bus: Bus!
-    var cartridge: Cartridge
+    // Using unowned to avoid retain cycles - NESEmulator owns these components
+    unowned var bus: Bus!
+    unowned var cartridge: Cartridge
     var model: NESModel
 
     // MARK: - Timing & Synchronisation

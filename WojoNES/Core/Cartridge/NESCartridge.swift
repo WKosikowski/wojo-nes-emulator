@@ -26,7 +26,8 @@ class NESCartridge: Cartridge {
     let prgROM: Data // PRG ROM data
     let chrROM: Data // CHR ROM data
     let trainer: Data? // Trainer data (512 bytes, if present)
-    var bus: Bus!
+    /// Using unowned to avoid retain cycles - NESEmulator owns the Bus
+    unowned var bus: Bus!
 
     // Cartridge memory components
     var prgMemory: BankMemory = .init()

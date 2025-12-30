@@ -14,7 +14,8 @@ public final class NESCPU: CPU {
 
     // MARK: Properties
 
-    var bus: Bus!
+    /// Using unowned to avoid retain cycles - NESEmulator owns the Bus
+    unowned var bus: Bus!
 
     var currentOperation: Operation!
 
