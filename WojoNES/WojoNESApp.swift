@@ -51,14 +51,22 @@ struct WojoNESApp: App {
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    @StateObject var viewModel: NESViewModel = .init()
+
     // MARK: Computed Properties
 
     var body: some Scene {
         WindowGroup(Windows.main.title) {
-            NESView()
+            WindowOpenerView()
+                .environmentObject(viewModel)
                 .frame(minWidth: 400, minHeight: 400)
         }
         .windowStyle(.hiddenTitleBar)
+
+        Window(Windows.options.title, id: Windows.options.identifier) {
+            ControllerConfigView()
+                .environmentObject(viewModel)
+        }
     }
 
     var commands: some Commands {
@@ -71,5 +79,19 @@ struct WojoNESApp: App {
                 modifiers: [.command]
             )
         }
+    }
+}
+
+// MARK: - WindowOpenerView
+
+struct WindowOpenerView: View {
+    @Environment(\.openWindow) private var openWindow
+    @EnvironmentObject var viewModel: NESViewModel
+
+    var body: some View {
+        NESView()
+            .onReceive(NotificationCenter.default.publisher(for: .openOptionsWindow)) { _ in
+                openWindow(id: Windows.options.identifier)
+            }
     }
 }

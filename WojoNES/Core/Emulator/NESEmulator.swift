@@ -15,19 +15,23 @@ class NESEmulator: Emulator {
     var cartridge: Cartridge
     let model: NESModel
 
+    /// The NES controller instance that tracks button states and key bindings
+    private let controller: NESController
+
     // MARK: Lifecycle
 
-    convenience init(cartridge: Cartridge) {
+    convenience init(cartridge: Cartridge, controller: NESController = NESController()) {
         let ppu = NESPPU(cartridge: cartridge)
-        self.init(bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge)
+        self.init(bus: NESBus(), cpu: NESCPU(), apu: NESAPU(), ppu: ppu, cartridge: cartridge, controller: controller)
     }
 
-    init(bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge) {
+    init(bus: Bus, cpu: CPU, apu: APU, ppu: PPU, cartridge: Cartridge, controller: NESController = NESController()) {
         self.bus = bus
         self.cpu = cpu
         self.apu = apu
         self.ppu = ppu
         self.cartridge = cartridge
+        self.controller = controller
         model = cartridge.getModel()
 
         // connect all components
@@ -78,6 +82,22 @@ class NESEmulator: Emulator {
 
     func mapController(_ controller: NESController) {
         bus.controller[0] = controller.toByte()
+    }
+
+    /// Sets a key binding for a specific NES controller button.
+    /// Updates the internal controller's key mappings so subsequent key presses are recognised.
+    /// - Parameters:
+    ///   - button: The NES button to bind (e.g., .a, .b, .up, .down)
+    ///   - key: The keyboard key string to bind to the button
+    func setControllerKeyBinding(button: NESButton, key: String) {
+        controller.setKeyBinding(button: button, key: key)
+    }
+
+    /// Retrieves the current key binding for a specific NES controller button.
+    /// - Parameter button: The NES button to query
+    /// - Returns: The keyboard key string bound to the button
+    func getControllerKeyBinding(button: NESButton) -> String {
+        controller.getKeyBinding(button: button)
     }
 
     func connect(cartridge: any Cartridge) {

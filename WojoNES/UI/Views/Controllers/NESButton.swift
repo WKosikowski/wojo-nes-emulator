@@ -20,6 +20,41 @@ enum NESButton: String, CaseIterable {
     case down = "Down"
     case left = "Left"
     case right = "Right"
+    // Emulator controls (not part of NES controller)
+    case pause = "Pause"
+    case screenshot = "Screenshot"
+
+    // MARK: Static Computed Properties
+
+    /// Returns only the NES controller buttons (excludes emulator controls)
+    static var controllerButtons: [NESButton] {
+        allCases.filter(\.isControllerButton)
+    }
+
+    /// Returns only the emulator control buttons
+    static var emulatorControls: [NESButton] {
+        allCases.filter { !$0.isControllerButton }
+    }
+
+    // MARK: Computed Properties
+
+    /// Returns true if this is an actual NES controller button (not an emulator control)
+    var isControllerButton: Bool {
+        switch self {
+            case .a,
+                 .b,
+                 .select,
+                 .start,
+                 .up,
+                 .down,
+                 .left,
+                 .right:
+                return true
+            case .pause,
+                 .screenshot:
+                return false
+        }
+    }
 }
 
 // MARK: - Controller
@@ -59,6 +94,8 @@ class Controller {
                 .down: "ArrowDown",
                 .left: "ArrowLeft",
                 .right: "ArrowRight",
+                .pause: "Escape",
+                .screenshot: "F12",
             ]
         }
         set {
@@ -109,9 +146,9 @@ class Controller {
     /// Update button states based on keyboard input
     func updateButtons(key: String, isPressed: Bool) {
         var newButtons = buttons
-        for button in NESButton.allCases {
-            if keyBindings[button] == key {
-                newButtons[buttonIndex(button)] = isPressed
+        for button in NESButton.controllerButtons {
+            if keyBindings[button] == key, let index = buttonIndex(button) {
+                newButtons[index] = isPressed
             }
         }
         buttons = newButtons
@@ -143,7 +180,8 @@ class Controller {
     }
 
     // Helper: Map NESButton to button array index
-    private func buttonIndex(_ button: NESButton) -> Int {
+    // Returns nil for emulator controls (pause, screenshot) as they're not controller buttons
+    private func buttonIndex(_ button: NESButton) -> Int? {
         switch button {
             case .a: return 0
             case .b: return 1
@@ -153,6 +191,8 @@ class Controller {
             case .down: return 5
             case .left: return 6
             case .right: return 7
+            case .pause,
+                 .screenshot: return nil
         }
     }
 }
