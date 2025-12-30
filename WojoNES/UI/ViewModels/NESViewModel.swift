@@ -246,23 +246,93 @@ class NESViewModel: ObservableObject {
         openPanel.allowsMultipleSelection = false
         openPanel.canChooseDirectories = false
         openPanel.canChooseFiles = true
-        openPanel.allowedContentTypes = [.init(filenameExtension: "nes")!]
-        openPanel.title = "Select NES ROM"
+        openPanel.allowedContentTypes = [
+            .init(filenameExtension: "nes")!,
+            .init(filenameExtension: "wnes")!,
+        ]
+        openPanel.title = "Select NES ROM or Save State"
 
         openPanel.begin { [weak self] result in
             guard let self else { return }
 
             if result == .OK, let url = openPanel.url {
                 do {
-                    let cartridge = try NESCartridge(data: Data(contentsOf: url))
-                    nes = NESEmulator(cartridge: cartridge, controller: controller)
+                    // Check file extension to determine if it's a save state or ROM
+                    if url.pathExtension.lowercased() == "wnes" {
+                        // Load save state
+                        if let nesEmulator = nes as? NESEmulator {
+                            try nesEmulator.load(from: url)
+                            errorMessage = nil
+                            #if DEBUG
+                                print("[NESViewModel] Save state loaded successfully")
+                            #endif
+                        } else {
+                            // No existing emulator - need to create one from the save state
+                            // First decode the save state to get the ROM data
+                            let saveStateData = try Data(contentsOf: url)
+                            let decoder = JSONDecoder()
+                            let saveState = try decoder.decode(SaveState.self, from: saveStateData)
 
-                    errorMessage = nil
+                            // Create cartridge from the embedded ROM data
+                            let tempCartridge = try NESCartridge(data: saveState.romData)
+                            let nesEmulator = NESEmulator(cartridge: tempCartridge, controller: controller)
 
-                    // Start the emulator automatically when ROM is loaded
+                            // Now load the full state
+                            try nesEmulator.load(from: url)
+                            nes = nesEmulator
+                            errorMessage = nil
+                            #if DEBUG
+                                print("[NESViewModel] Save state loaded (new emulator)")
+                            #endif
+                        }
+                    } else {
+                        // Load ROM
+                        let cartridge = try NESCartridge(data: Data(contentsOf: url))
+                        nes = NESEmulator(cartridge: cartridge, controller: controller)
+                        errorMessage = nil
+                    }
+
+                    // Start the emulator automatically when ROM/state is loaded
                     emulatorState = .running
                 } catch {
-                    errorMessage = "Failed to load ROM: \(error.localizedDescription)"
+                    errorMessage = "Failed to load file: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    func saveState() {
+        #if DEBUG
+            print("[NESViewModel] saveState() called")
+        #endif
+
+        guard let nesEmulator = nes as? NESEmulator else {
+            #if DEBUG
+                print("[NESViewModel] No emulator instance available")
+            #endif
+            return
+        }
+
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [.init(filenameExtension: "wnes")!]
+        savePanel.canCreateDirectories = true
+        savePanel.title = "Save Emulator State"
+        savePanel.nameFieldStringValue = "save_state.wnes"
+
+        savePanel.begin { [weak self] result in
+            guard let self else { return }
+
+            if result == .OK, let url = savePanel.url {
+                do {
+                    try nesEmulator.save(to: url)
+                    #if DEBUG
+                        print("[NESViewModel] State saved successfully to: \(url.path)")
+                    #endif
+                } catch {
+                    errorMessage = "Failed to save state: \(error.localizedDescription)"
+                    #if DEBUG
+                        print("[NESViewModel] Failed to save state: \(error)")
+                    #endif
                 }
             }
         }
@@ -322,19 +392,24 @@ class NESViewModel: ObservableObject {
         guard let nes, emulatorState == .running else { return }
 
         nes.step()
-        pixelMap = nes.getFrame()
+        let frame = nes.getFrame()
 
         let currentTime = CACurrentMediaTime()
         frameCount += 1
 
-        if currentTime - lastUpdateTime >= 1.0 {
-            fps = Double(frameCount)
-            frameCount = 0
-            lastUpdateTime = currentTime
+        let shouldUpdateFPS = currentTime - lastUpdateTime >= 1.0
+        let currentFPS = shouldUpdateFPS ? Double(frameCount) : nil
+
+        // Update @Published properties on the main thread to avoid menu modification crash
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            pixelMap = frame
+
+            if let currentFPS {
+                fps = currentFPS
+                frameCount = 0
+                lastUpdateTime = currentTime
+            }
         }
     }
-}
-
-#Preview {
-    NESView()
 }

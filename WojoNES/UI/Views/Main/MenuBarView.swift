@@ -39,6 +39,11 @@ struct MenuBarView: View {
                 }
             )
 
+            // Save State button — saves the current emulator state to a .wnes file
+            MenuButton(icon: "square.and.arrow.down.fill", label: "Save State", action: {
+                viewModel.saveState()
+            })
+
             // Settings button — opens the Options window for controller configuration and display settings
             MenuButton(icon: "gear", label: "Settings", action: {
                 NSApp.sendAction(#selector(AppDelegate.showSecondWindow), to: nil, from: nil)
