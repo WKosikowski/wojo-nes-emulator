@@ -2,6 +2,7 @@ import CoreGraphics
 import Foundation
 import Metal
 import MetalKit
+import UniformTypeIdentifiers
 
 /// Type alias for a mutable pointer to Int32 pixel data.
 /// Used throughout the rendering pipeline for efficient pixel manipulation.
@@ -327,5 +328,71 @@ public extension PixelMatrix {
         let dest = pixels.baseAddress!.advanced(by: start)
         let bytes = bytes * MemoryLayout<Int32>.stride
         memcpy(dest, pixelLine, bytes)
+    }
+
+    /// Saves the pixel matrix as a PNG file to the specified file path.
+    /// Uses the CGImage property to convert pixels and writes them to disk.
+    /// - Parameter filePath: The destination file path (including filename and .png extension).
+    /// - Returns: true if the save was successful, false otherwise.
+    func saveToPNG(filePath: String) -> Bool {
+        #if DEBUG
+            print("[PixelMatrix] saveToPNG called with path: \(filePath)")
+            print("[PixelMatrix] Pixel matrix dimensions: \(width)x\(height)")
+            print("[PixelMatrix] Pixel count: \(pixels.count)")
+        #endif
+
+        guard let cgImage = image else {
+            #if DEBUG
+                print("[PixelMatrix] Failed to create CGImage for screenshot")
+            #endif
+            return false
+        }
+
+        #if DEBUG
+            print("[PixelMatrix] CGImage created successfully: \(cgImage.width)x\(cgImage.height)")
+        #endif
+
+        let fileURL = URL(fileURLWithPath: filePath)
+        #if DEBUG
+            print("[PixelMatrix] File URL: \(fileURL)")
+            print("[PixelMatrix] Parent directory exists: \(FileManager.default.fileExists(atPath: fileURL.deletingLastPathComponent().path))")
+        #endif
+
+        guard
+            let destination = CGImageDestinationCreateWithURL(
+                fileURL as CFURL,
+                kUTTypePNG,
+                1,
+                nil
+            )
+        else {
+            #if DEBUG
+                print("[PixelMatrix] Failed to create image destination")
+            #endif
+            return false
+        }
+
+        #if DEBUG
+            print("[PixelMatrix] Image destination created successfully")
+        #endif
+
+        CGImageDestinationAddImage(destination, cgImage, nil)
+
+        #if DEBUG
+            print("[PixelMatrix] Image added to destination, finalizing...")
+        #endif
+
+        guard CGImageDestinationFinalize(destination) else {
+            #if DEBUG
+                print("[PixelMatrix] Failed to finalize image destination")
+            #endif
+            return false
+        }
+
+        #if DEBUG
+            print("[PixelMatrix] Screenshot saved successfully!")
+        #endif
+
+        return true
     }
 }

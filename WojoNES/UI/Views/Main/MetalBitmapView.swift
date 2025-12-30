@@ -200,6 +200,9 @@ struct MetalBitmapView<Controller: KeyboardMappableController>: NSViewRepresenta
     /// The pixel matrix to render
     let pixmap: PixelMatrix
 
+    /// Optional controller instance to use (if nil, a new one will be created)
+    var controller: Controller?
+
     /// Callback invoked when controller input state changes
     var onControllerUpdate: ((Controller) -> Void)?
 
@@ -224,6 +227,13 @@ struct MetalBitmapView<Controller: KeyboardMappableController>: NSViewRepresenta
         mtkView.framebufferOnly = true
         mtkView.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
         mtkView.drawableSize = CGSize(width: pixmap.width, height: pixmap.height)
+
+        // Set controller instance (use provided one or create new)
+        if let controller {
+            mtkView.controllerState = controller
+        } else {
+            mtkView.controllerState = Controller()
+        }
 
         // Wire up controller input callback
         mtkView.onControllerUpdate = onControllerUpdate

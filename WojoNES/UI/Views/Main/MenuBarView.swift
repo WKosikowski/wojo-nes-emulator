@@ -13,13 +13,8 @@ import SwiftUI
 struct MenuBarView: View {
     // MARK: SwiftUI Properties
 
-    /// Binding to track whether the emulator is currently running
-    @Binding var isRunning: Bool
-
-    // MARK: Properties
-
     /// Reference to the view model for coordinating emulator actions
-    let viewModel: NESViewModel
+    @ObservedObject var viewModel: NESViewModel
 
     // MARK: Content Properties
 
@@ -31,15 +26,18 @@ struct MenuBarView: View {
             })
 
             // Pause/Resume button — toggles emulation state
-            // Icon and label change based on current running state
-            MenuButton(icon: isRunning ? "pause.fill" : "play.fill", label: isRunning ? "Pause" : "Resume", action: {
-                if isRunning {
-                    viewModel.pause()
-                } else {
-                    viewModel.resume()
+            // Icon and label change based on current emulator state
+            MenuButton(
+                icon: viewModel.emulatorState == .running ? "pause.fill" : "play.fill",
+                label: viewModel.emulatorState == .running ? "Pause" : "Resume",
+                action: {
+                    if viewModel.emulatorState == .running {
+                        viewModel.pause()
+                    } else {
+                        viewModel.resume()
+                    }
                 }
-                isRunning.toggle()
-            })
+            )
 
             // Settings button — opens the Options window for controller configuration and display settings
             MenuButton(icon: "gear", label: "Settings", action: {

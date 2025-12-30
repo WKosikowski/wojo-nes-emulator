@@ -88,6 +88,12 @@ final class NESController: KeyboardMappableController {
     var left: Bool = false // D-pad Left
     var right: Bool = false // D-pad Right
 
+    /// Callback triggered when screenshot key is pressed
+    var onScreenshotPressed: (() -> Void)?
+
+    /// Callback triggered when pause key is pressed
+    var onPauseToggled: (() -> Void)?
+
     /// Mapping from button names to key strings (e.g., "Return" → start button)
     /// Users can customise these key bindings
     private var keyBindings: [String: String] = [:] {
@@ -160,9 +166,44 @@ final class NESController: KeyboardMappableController {
         // This is a simplified approach; for production, use a proper key translation
         let keyString = keyStringFromCode(keyCode)
 
+        #if DEBUG
+            print("[NESController] Key event: \(keyString) (code: \(keyCode)) - \(isPressed ? "pressed" : "released")")
+        #endif
+
         // Look up which button this key is bound to
         if let button = keyCodeToButton[keyString.lowercased()] {
+            #if DEBUG
+                print("[NESController] Mapped to button: \(button.rawValue)")
+            #endif
+
+            // Handle emulator controls
+            if isPressed {
+                switch button {
+                    case .screenshot:
+                        #if DEBUG
+                            print("[NESController] Screenshot button pressed, callback: \(onScreenshotPressed != nil)")
+                        #endif
+                        onScreenshotPressed?()
+                        return
+
+                    case .pause:
+                        #if DEBUG
+                            print("[NESController] Pause button pressed")
+                        #endif
+                        onPauseToggled?()
+                        return
+
+                    default:
+                        break
+                }
+            }
+
+            // Handle NES controller buttons
             setButtonState(button, isPressed: isPressed)
+        } else {
+            #if DEBUG
+                print("[NESController] Key \(keyString) not mapped to any button")
+            #endif
         }
     }
 
