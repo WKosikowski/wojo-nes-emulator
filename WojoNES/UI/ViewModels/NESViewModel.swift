@@ -357,7 +357,7 @@ class NESViewModel: ObservableObject {
             guard let self else { return }
             if emulatorState == .running {
                 pause()
-            } else {
+            } else if emulatorState != .idle {
                 resume()
             }
         }

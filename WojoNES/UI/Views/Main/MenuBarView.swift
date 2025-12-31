@@ -33,7 +33,7 @@ struct MenuBarView: View {
                 action: {
                     if viewModel.emulatorState == .running {
                         viewModel.pause()
-                    } else {
+                    } else if viewModel.emulatorState != .idle {
                         viewModel.resume()
                     }
                 }
