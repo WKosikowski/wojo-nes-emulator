@@ -115,6 +115,9 @@ class NESBus: Bus {
                 if strobing, (data & 1) == 0 {
                     controllerState[0] = controller[0]
                     controllerState[1] = controller[1]
+                    #if DEBUG
+                        controllerState[1] = controller[0]
+                    #endif
                 }
                 strobing = data == 1
 
