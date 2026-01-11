@@ -9,6 +9,7 @@ import CoreVideo
 import Foundation
 import MetalKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The main view controller for the NES emulator interface.
 /// Displays the emulator output via Metal rendering and provides an overlay menu bar.
@@ -107,6 +108,10 @@ struct NESView: View {
         }
         // Maintain the NES aspect ratio (256:240) when scaling the window
         .aspectRatio(CGSize(width: 256, height: 240), contentMode: .fit)
+        // Enable drag and drop for .nes and .wnes files
+        .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+            handleDrop(providers: providers)
+        }
         // Clean up resources when the view disappears
         .onDisappear {
             hideMenuTimer?.invalidate()
@@ -125,5 +130,38 @@ struct NESView: View {
                 showMenu = false
             }
         }
+    }
+
+    /// Handles file drop events for .nes and .wnes files.
+    /// Loads the dropped file into the emulator.
+    /// - Parameter providers: Array of item providers from the drop operation
+    /// - Returns: True if the drop was handled successfully, false otherwise
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else {
+            return false
+        }
+
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+            guard
+                let data = item as? Data,
+                let url = URL(dataRepresentation: data, relativeTo: nil)
+            else {
+                return
+            }
+
+            let fileExtension = url.pathExtension.lowercased()
+            guard fileExtension == "nes" || fileExtension == "wnes" else {
+                DispatchQueue.main.async {
+                    viewModel.errorMessage = "Invalid file type. Only .nes and .wnes files are supported."
+                }
+                return
+            }
+
+            DispatchQueue.main.async {
+                viewModel.loadFile(from: url)
+            }
+        }
+
+        return true
     }
 }
