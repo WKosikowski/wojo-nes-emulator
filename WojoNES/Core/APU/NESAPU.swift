@@ -10,7 +10,8 @@ class NESAPU: APU {
 
     var status: UInt8
 
-    var bus: Bus!
+    /// Using unowned to avoid retain cycles - NESEmulator owns the Bus
+    unowned var bus: Bus!
 
     // MARK: Lifecycle
 

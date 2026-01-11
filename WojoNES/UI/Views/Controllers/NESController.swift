@@ -153,6 +153,18 @@ final class NESController: KeyboardMappableController {
         return binding
     }
 
+    /// Gets all current key bindings as a dictionary
+    /// - Returns: Dictionary mapping button names to key strings
+    func getAllKeyBindings() -> [String: String] {
+        keyBindings
+    }
+
+    /// Sets all key bindings from a dictionary
+    /// - Parameter bindings: Dictionary mapping button names to key strings
+    func setAllKeyBindings(_ bindings: [String: String]) {
+        keyBindings = bindings
+    }
+
     // MARK: - KeyboardMappableController
 
     /// Updates the controller state based on a keyboard key event.

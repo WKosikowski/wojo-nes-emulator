@@ -11,10 +11,11 @@ class NESBus: Bus {
     /// System RAM mirrored every 0x800 bytes
     var ram: [UInt8] = Array(repeating: 0, count: 0x2000)
     // Connected components; set via `connect` methods
-    var ppu: PPU!
-    var apu: APU!
-    var cpu: CPU!
-    var cartridge: Cartridge!
+    // Using unowned to avoid retain cycles - NESEmulator owns these components
+    unowned var ppu: PPU!
+    unowned var apu: APU!
+    unowned var cpu: CPU!
+    unowned var cartridge: Cartridge!
 
     // Controller serial state and latched controller values
     var controllerState = [UInt8](repeating: 0, count: 2)
@@ -114,6 +115,9 @@ class NESBus: Bus {
                 if strobing, (data & 1) == 0 {
                     controllerState[0] = controller[0]
                     controllerState[1] = controller[1]
+                    #if DEBUG
+                        controllerState[1] = controller[0]
+                    #endif
                 }
                 strobing = data == 1
 
