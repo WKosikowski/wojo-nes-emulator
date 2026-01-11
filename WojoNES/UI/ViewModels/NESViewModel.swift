@@ -94,11 +94,20 @@ class NESViewModel: ObservableObject {
         }
     }
 
+    private var autoSaveCacheURL: URL? {
+        guard let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        return cacheDir.appendingPathComponent("autosave.wnes")
+    }
+
     // MARK: Lifecycle
 
     init() {
         setupDisplayLink()
         setupControllerCallbacks()
+        setupAutoSaveNotification()
+        autoLoad()
     }
 
     deinit {
@@ -338,6 +347,67 @@ class NESViewModel: ObservableObject {
         }
     }
 
+    func autoSave() {
+        guard
+            let nesEmulator = nes as? NESEmulator,
+            let cacheURL = autoSaveCacheURL
+        else {
+            #if DEBUG
+                print("[NESViewModel] Auto-save skipped: no emulator or cache URL")
+            #endif
+            return
+        }
+
+        do {
+            try nesEmulator.save(to: cacheURL)
+            #if DEBUG
+                print("[NESViewModel] Auto-saved to: \(cacheURL.path)")
+            #endif
+        } catch {
+            #if DEBUG
+                print("[NESViewModel] Auto-save failed: \(error)")
+            #endif
+        }
+    }
+
+    func autoLoad() {
+        guard
+            let cacheURL = autoSaveCacheURL,
+            FileManager.default.fileExists(atPath: cacheURL.path)
+        else {
+            #if DEBUG
+                print("[NESViewModel] No auto-save file found")
+            #endif
+            return
+        }
+
+        do {
+            // Decode the save state to get the ROM data
+            let saveStateData = try Data(contentsOf: cacheURL)
+            let decoder = JSONDecoder()
+            let saveState = try decoder.decode(SaveState.self, from: saveStateData)
+
+            // Create cartridge from the embedded ROM data
+            let tempCartridge = try NESCartridge(data: saveState.romData)
+            let nesEmulator = NESEmulator(cartridge: tempCartridge, controller: controller)
+
+            // Load the full state
+            try nesEmulator.load(from: cacheURL)
+            nes = nesEmulator
+
+            // Set emulator to paused state so user can choose to resume
+            emulatorState = .paused
+
+            #if DEBUG
+                print("[NESViewModel] Auto-loaded from: \(cacheURL.path)")
+            #endif
+        } catch {
+            #if DEBUG
+                print("[NESViewModel] Auto-load failed: \(error)")
+            #endif
+        }
+    }
+
     private func setupControllerCallbacks() {
         #if DEBUG
             print("[NESViewModel] Setting up controller callbacks")
@@ -360,6 +430,16 @@ class NESViewModel: ObservableObject {
             } else if emulatorState != .idle {
                 resume()
             }
+        }
+    }
+
+    private func setupAutoSaveNotification() {
+        NotificationCenter.default.addObserver(
+            forName: .appWillTerminate,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.autoSave()
         }
     }
 

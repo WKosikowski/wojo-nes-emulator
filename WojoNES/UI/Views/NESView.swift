@@ -51,6 +51,7 @@ struct NESView: View {
                 if viewModel.emulatorState == .paused {
                     Image(systemName: "pause.fill")
                         .font(.system(size: 80))
+                        .foregroundColor(.white)
                         .padding(10)
                         .background(
                             RoundedRectangle(cornerRadius: 12)

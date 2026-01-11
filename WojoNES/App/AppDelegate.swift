@@ -10,12 +10,16 @@ import SwiftUI
 
 extension Notification.Name {
     static let openOptionsWindow = Notification.Name("openOptionsWindow")
+    static let appWillTerminate = Notification.Name("appWillTerminate")
 }
 
 // MARK: - MainWindowDelegate
 
 class MainWindowDelegate: NSObject, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
+        // Post notification to trigger auto-save
+        NotificationCenter.default.post(name: .appWillTerminate, object: nil)
+
         // Quit the app when the main window is closed
         NSApp.terminate(nil)
     }
