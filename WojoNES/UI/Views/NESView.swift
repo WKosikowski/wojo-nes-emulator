@@ -29,21 +29,34 @@ struct NESView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // Full-screen Metal bitmap view rendering the emulator output
-            MetalBitmapView(pixmap: viewModel.pixelMap, controller: viewModel.getController()) { controller in
-                viewModel.nesControllerEvent(controller: controller)
-            }
-            .ignoresSafeArea()
-            // Show and reset the hide timer when the mouse is moving
-            .onContinuousHover { phase in
-                switch phase {
-                    case .active:
-                        showMenu = true
-                        resetHideMenuTimer()
+            ZStack {
+                // Full-screen Metal bitmap view rendering the emulator output
+                MetalBitmapView(pixmap: viewModel.pixelMap, controller: viewModel.getController()) { controller in
+                    viewModel.nesControllerEvent(controller: controller)
+                }
+                .ignoresSafeArea()
+                // Show and reset the hide timer when the mouse is moving
+                .onContinuousHover { phase in
+                    switch phase {
+                        case .active:
+                            showMenu = true
+                            resetHideMenuTimer()
 
-                    case .ended:
-                        // Start the timer when mouse stops moving
-                        resetHideMenuTimer()
+                        case .ended:
+                            // Start the timer when mouse stops moving
+                            resetHideMenuTimer()
+                    }
+                }
+
+                if viewModel.emulatorState == .paused {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 80))
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.6))
+                        )
                 }
             }
 

@@ -200,6 +200,12 @@ struct Header {
 
     // MARK: Functions
 
+    /// Converts the header back to its raw Data representation
+    /// - Returns: 16-byte header data in iNES/NES 2.0 format
+    func toData() -> Data {
+        bytes
+    }
+
     /// Validates flags in bytes 6-9 (console type and format compatibility)
     private func validateFlags(_ flags6: UInt8, _ flags7: UInt8, _ flags8: UInt8, _ flags9: UInt8) -> Bool {
         let consoleType = flags7 & 0x03
